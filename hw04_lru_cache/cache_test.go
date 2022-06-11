@@ -49,14 +49,96 @@ func TestCache(t *testing.T) {
 		require.Nil(t, val)
 	})
 
+	t.Run("cache capacity=0", func(t *testing.T) {
+		c := NewCache(0)
+		c.Set("hello", "world")
+
+		val, ok := c.Get("hello")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("popping an element", func(t *testing.T) {
+		c := NewCache(3)
+
+		c.Set("a", 1)
+		val, ok := c.Get("a")
+		require.True(t, ok)
+		require.Equal(t, 1, val)
+
+		c.Set("b", 2)
+		val, ok = c.Get("b")
+		require.True(t, ok)
+		require.Equal(t, 2, val)
+
+		c.Set("c", 3)
+		val, ok = c.Get("c")
+		require.True(t, ok)
+		require.Equal(t, 3, val)
+
+		c.Set("d", 4) // drop a
+		val, ok = c.Get("d")
+		require.True(t, ok)
+		require.Equal(t, 4, val)
+
+		val, ok = c.Get("a")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
+	t.Run("pareto rule", func(t *testing.T) {
+		c := NewCache(4)
+		c.Set("4", 4) // [4]
+		c.Set("3", 3) // [3, 4]
+		c.Set("2", 2) // [2, 3, 4]
+		c.Set("1", 1) // [1, 2, 3, 4]
+
+		c.Get("2") // [2, 1, 3, 4]
+		c.Get("2") // [2, 1, 3, 4]
+		c.Get("3") // [3, 2, 1, 4]
+
+		c.Set("5", 5) // [5, 3, 2, 1]
+
+		_, ok := c.Get("1")
+		require.True(t, ok)
+
+		_, ok = c.Get("2")
+		require.True(t, ok)
+
+		_, ok = c.Get("3")
+		require.True(t, ok)
+
+		_, ok = c.Get("4")
+		require.False(t, ok) // not exists
+
+		_, ok = c.Get("5")
+		require.True(t, ok)
+	})
+
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(3)
+
+		c.Set("a", 1)
+		c.Set("b", 2)
+		c.Set("c", 3)
+
+		c.Clear()
+
+		val, ok := c.Get("b")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		val, ok = c.Get("c")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		val, ok = c.Get("d")
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove me if task with asterisk completed.
-
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
