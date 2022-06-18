@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -43,9 +43,52 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+var letterRusYoTest = `
+	Еж, Ёж, Ёж
+`
+
+var engText = `
+	Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
+	et dolore magna aliqua. Amet nisl purus in mollis nunc sed id semper. Nunc id cursus metus 
+	aliquam eleifend mi in. Pharetra diam sit amet nisl suscipit adipiscing bibendum. Adipiscing at in tellus integer.
+	Id porta nibh venenatis cras sed. Morbi quis commodo odio aenean. Egestas sed tempus urna et. 
+	Mattis ullamcorper velit sed ullamcorper morbi tincidunt ornare. Tempus egestas sed sed risus pretium quam. 
+	Viverra accumsan in nisl nisi. Viverra maecenas accumsan lacus vel facilisis volutpat est velit. Et malesuada 
+	fames ac turpis. Nisi lacus sed viverra tellus. Viverra maecenas accumsan lacus vel facilisis. Sed augue lacus viverra 
+	vitae congue eu consequat. Nibh sit amet commodo nulla nullable nullam. Aliquet risus feugiat in ante. Aliquet enim 
+	tortor at auctor urna nunc. Et malesuada fames ac turpis egestas.
+`
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
+		require.Nil(t, Top10(""))
+	})
+
+	t.Run("english text", func(t *testing.T) {
+		expected := []string{
+			"sed",        // 9
+			"in",         // 5
+			"viverra",    // 5
+			"amet",       // 4
+			"et",         // 4
+			"lacus",      // 4
+			"accumsan",   // 3
+			"adipiscing", // 3
+			"egestas",    // 3
+			"id",         // 3
+		}
+		require.Len(t, Top10(engText), len(expected))
+		require.Equal(t, expected, Top10(engText))
+	})
+
+	t.Run("е/ё symbol & len < 10", func(t *testing.T) {
+		expected := []string{
+			"ёж", // 2
+			"еж", // 1
+		}
+		require.Len(t, Top10(letterRusYoTest), len(expected))
+		require.Equal(t, expected, Top10(letterRusYoTest))
 	})
 
 	t.Run("positive test", func(t *testing.T) {
