@@ -15,6 +15,78 @@ import (
 func TestRun(t *testing.T) {
 	defer goleak.VerifyNone(t)
 
+	t.Run("error at n=0 or m=0", func(t *testing.T) {
+		data := []struct {
+			n, m int
+			err  error
+		}{
+			{n: 0, m: 0, err: ErrErrorsLimitExceeded},
+			{n: 0, m: 1, err: ErrErrorsLimitExceeded},
+			{n: 1, m: 0, err: ErrErrorsLimitExceeded},
+			{n: 1, m: 1, err: nil},
+		}
+
+		for _, datum := range data {
+			err := Run([]Task{}, datum.n, datum.m)
+			require.Truef(t, errors.Is(err, datum.err), "actual err - %v", err)
+		}
+	})
+
+	t.Run("compare n & taskCount", func(t *testing.T) {
+		data := []struct {
+			workers, tasks int
+		}{
+			{workers: 100, tasks: 50},
+			{workers: 50, tasks: 100},
+			{workers: 100, tasks: 100},
+		}
+
+		for _, datum := range data {
+			tasks := make([]Task, 0, datum.tasks)
+
+			var runTasksCount int32
+			for i := 0; i < datum.tasks; i++ {
+				tasks = append(tasks, func() error {
+					atomic.AddInt32(&runTasksCount, 1)
+					return nil
+				})
+			}
+
+			err := Run(tasks, datum.workers, 1)
+
+			require.Nil(t, err)
+			require.LessOrEqual(t, runTasksCount, int32(datum.tasks))
+		}
+	})
+
+	t.Run("eventually. tasks without errors", func(t *testing.T) {
+		tasksCount := 50
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+		for i := 0; i < tasksCount; i++ {
+			tasks = append(tasks, func() error {
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		workersCount := 5
+		maxErrorsCount := 1
+
+		require.Eventually(
+			t,
+			func() bool {
+				require.Nil(t, Run(tasks, workersCount, maxErrorsCount))
+				return true
+			},
+			time.Duration(tasksCount)*time.Millisecond/time.Duration(workersCount),
+			time.Millisecond,
+		)
+
+		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
+	})
+
 	t.Run("if were errors in first M tasks, than finished not more N+M tasks", func(t *testing.T) {
 		tasksCount := 50
 		tasks := make([]Task, 0, tasksCount)
