@@ -8,7 +8,7 @@ import (
 
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
-	ErrCanNotCreateFile      = errors.New("Can not create file")
+	ErrCanNotCreateFile      = errors.New("can not create file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
