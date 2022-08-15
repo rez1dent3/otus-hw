@@ -2,6 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io"
+	"log"
+	"os"
 )
 
 var (
@@ -18,5 +22,33 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here.
+
+	input, err := os.Open(from)
+	if err != nil {
+		log.Fatalln(ErrUnsupportedFile)
+	}
+
+	output, err := os.Create(to)
+	if err != nil {
+		_ = input.Close()
+		log.Fatalln(ErrCanNotCreateFile)
+	}
+
+	max := limit
+	if stat, _ := input.Stat(); err == nil {
+		max = stat.Size()
+	}
+
+	progress := &progressBar{cur: 0, limit: limit, max: max - offset}
+	writer := io.MultiWriter(output, progress)
+
+	err = ioCopy(input, writer, offset, limit)
+	_ = input.Close()
+	_ = output.Close()
+
+	fmt.Println()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
