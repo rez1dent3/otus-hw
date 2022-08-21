@@ -1,9 +1,12 @@
+//go:build !bench
 // +build !bench
 
 package hw10programoptimization
 
 import (
 	"bytes"
+	"regexp/syntax"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,6 +18,34 @@ func TestGetDomainStat(t *testing.T) {
 {"Id":3,"Name":"Clarence Olson","Username":"RachelAdams","Email":"RoseSmith@Browsecat.com","Phone":"988-48-97","Password":"71kuz3gA5w","Address":"Monterey Park 39"}
 {"Id":4,"Name":"Gregory Reid","Username":"tButler","Email":"5Moore@Teklist.net","Phone":"520-04-16","Password":"r639qLNu","Address":"Sunfield Park 20"}
 {"Id":5,"Name":"Janice Rose","Username":"KeithHart","Email":"nulla@Linktype.com","Phone":"146-91-01","Password":"acSBF5","Address":"Russell Trail 61"}`
+
+	t.Run("get users: empty reader", func(t *testing.T) {
+		users, err := getUsers(strings.NewReader(""))
+		require.Len(t, users, 0)
+		require.Nil(t, err)
+	})
+
+	t.Run("unstable. regexp error", func(t *testing.T) {
+		users := make(chan User)
+		close(users)
+
+		_, err := countDomains(users, "\\")
+		require.Equal(t, &syntax.Error{Code: syntax.ErrTrailingBackslash}, err)
+	})
+
+	t.Run("unstable. invalid email", func(t *testing.T) {
+		users := make(chan User, 1)
+		users <- User{Email: "invalid email .com"}
+		close(users)
+
+		var err interface{}
+		func() {
+			defer func() { err = recover() }()
+			_, _ = countDomains(users, "com")
+		}()
+
+		require.NotNil(t, err)
+	})
 
 	t.Run("find 'com'", func(t *testing.T) {
 		result, err := GetDomainStat(bytes.NewBufferString(data), "com")

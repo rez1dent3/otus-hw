@@ -1,0 +1,7 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/rez1dent3/otus-hw/hw10_program_optimization
+BenchmarkGetDomainStat-8   	       4	 265363000 ns/op
+BenchmarkJson-8            	  764235	      1539 ns/op
+PASS
+ok  	github.com/rez1dent3/otus-hw/hw10_program_optimization	4.022s
