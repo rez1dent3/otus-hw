@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net"
 	"sync"
 	"testing"
@@ -12,6 +12,47 @@ import (
 )
 
 func TestTelnetClient(t *testing.T) {
+	t.Run("timeout 1ns", func(t *testing.T) {
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+		defer func() { require.NoError(t, l.Close()) }()
+
+		client := NewTelnetClient(l.Addr().String(), time.Nanosecond, io.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+
+		time.Sleep(20 * time.Microsecond)
+
+		in.Write([]byte("hello world\n"))
+
+		err = client.Send()
+		require.NoError(t, err)
+	})
+
+	t.Run("send message after closing", func(t *testing.T) {
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+		defer func() { require.NoError(t, l.Close()) }()
+
+		client := NewTelnetClient(l.Addr().String(), 0, io.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+		require.NoError(t, client.Close())
+
+		in.Write([]byte("hello world\n"))
+
+		require.Error(t, client.Send())
+	})
+
+	t.Run("incorrect address", func(t *testing.T) {
+		client := NewTelnetClient("example.loc", 0, nil, nil)
+		require.Error(t, client.Connect())
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		l, err := net.Listen("tcp", "127.0.0.1:")
 		require.NoError(t, err)
@@ -29,7 +70,7 @@ func TestTelnetClient(t *testing.T) {
 			timeout, err := time.ParseDuration("10s")
 			require.NoError(t, err)
 
-			client := NewTelnetClient(l.Addr().String(), timeout, ioutil.NopCloser(in), out)
+			client := NewTelnetClient(l.Addr().String(), timeout, io.NopCloser(in), out)
 			require.NoError(t, client.Connect())
 			defer func() { require.NoError(t, client.Close()) }()
 
