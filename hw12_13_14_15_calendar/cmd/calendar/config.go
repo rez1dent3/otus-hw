@@ -1,20 +1,25 @@
 package main
 
-// При желании конфигурацию можно вынести в internal/config.
-// Организация конфига в main принуждает нас сужать API компонентов, использовать
-// при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
+import (
+	"io"
+
+	"gopkg.in/yaml.v2"
+)
+
 type Config struct {
 	Logger LoggerConf
-	// TODO
 }
 
 type LoggerConf struct {
 	Level string
-	// TODO
 }
 
-func NewConfig() Config {
-	return Config{}
-}
+func NewConfig(reader io.Reader) (*Config, error) {
+	config := Config{}
+	decoder := yaml.NewDecoder(reader)
+	if err := decoder.Decode(&config); err != nil {
+		return nil, err
+	}
 
-// TODO
+	return &config, nil
+}
