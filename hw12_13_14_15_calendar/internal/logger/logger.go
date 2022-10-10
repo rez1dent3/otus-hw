@@ -2,6 +2,7 @@ package logger
 
 import (
 	"io"
+	"strings"
 )
 
 type levelType uint8
@@ -21,7 +22,7 @@ type Logger struct {
 
 func New(level string, writer io.Writer) *Logger {
 	var uintLevel levelType
-	switch level {
+	switch strings.ToLower(level) {
 	case "error":
 		uintLevel = levelError
 	case "warning":
