@@ -53,5 +53,5 @@ services:
       interval: 30s
       retries: 10
     volumes:
-      - ./nginx/rabbitmq-management.conf:/etc/nginx/site-enabled/rabbitmq-management.conf:ro
-      - ./nginx/calendar.conf:/etc/nginx/site-enabled/calendar.conf:ro
+      - ./nginx/rabbitmq-management.conf:/etc/nginx/conf.d/rabbitmq-management.conf:ro
+      - ./nginx/calendar.conf:/etc/nginx/conf.d/calendar.conf:ro
