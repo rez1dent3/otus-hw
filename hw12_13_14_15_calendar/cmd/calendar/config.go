@@ -8,10 +8,16 @@ import (
 
 type Config struct {
 	Logger LoggerConf
+	Server ServerConf
 }
 
 type LoggerConf struct {
 	Level string
+}
+
+type ServerConf struct {
+	Host string
+	Port string
 }
 
 func NewConfig(reader io.Reader) (*Config, error) {

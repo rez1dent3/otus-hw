@@ -1,1 +1,57 @@
-version: "3"
+version: '3.8'
+
+services:
+  postgres:
+    image: bitnami/postgresql:14.5.0-debian-11-r25
+    healthcheck:
+      test: "pg_isready -q -d calendar"
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    environment:
+      - POSTGRESQL_DATABASE=calendar
+      - POSTGRESQL_USERNAME=calendar_user
+      - POSTGRESQL_PASSWORD=calendar_pass
+
+  rabbitmq:
+    image: rabbitmq:3.9.23-management-alpine
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      timeout: 30s
+      interval: 30s
+      retries: 10
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit_user
+      - RABBITMQ_DEFAULT_PASS=rabbit_pass
+
+  calendar:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --connect-timeout 15 --silent --show-error --fail http://app:8080/health"
+      timeout: 30s
+      interval: 30s
+      retries: 10
+
+#  scheduler:
+#  sender:
+
+  nginx:
+    depends_on:
+      calendar:
+        condition: service_healthy
+    image: nginx:1.23.1-alpine
+    ports:
+      - "15672:15672" # rabbitmq
+      - "8080:80" # calendar
+    healthcheck:
+      test: "curl --connect-timeout 15 --silent --show-error --fail http://nginx/health"
+      timeout: 30s
+      interval: 30s
+      retries: 10
+    volumes:
+      - ./nginx/rabbitmq-management.conf:/etc/nginx/site-enabled/rabbitmq-management.conf:ro
+      - ./nginx/calendar.conf:/etc/nginx/site-enabled/calendar.conf:ro

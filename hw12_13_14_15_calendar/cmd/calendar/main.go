@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,6 +31,7 @@ func main() {
 
 	file, err := os.Open(configFile)
 	if err != nil {
+		log.Fatalln(err)
 		return
 	}
 
@@ -39,6 +41,7 @@ func main() {
 
 	config, err := NewConfig(file)
 	if err != nil {
+		log.Fatalln(err)
 		return
 	}
 
@@ -46,7 +49,7 @@ func main() {
 	storage := memorystorage.New()
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(logg, calendar, config.Server.Host, config.Server.Port)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
