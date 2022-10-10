@@ -6,8 +6,11 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       timeout: 45s
-      interval: 10s
+      interval: 1s
       retries: 10
+    deploy:
+      mode: replicated
+      replicas: 1
     environment:
       - POSTGRESQL_DATABASE=calendar
       - POSTGRESQL_USERNAME=calendar_user
@@ -20,8 +23,11 @@ services:
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       timeout: 30s
-      interval: 10s
+      interval: 1s
       retries: 10
+    deploy:
+      mode: replicated
+      replicas: 1
     environment:
       - RABBITMQ_DEFAULT_USER=rabbit_user
       - RABBITMQ_DEFAULT_PASS=rabbit_pass
@@ -37,6 +43,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    deploy:
+      mode: global
+      replicas: 1
     healthcheck:
       test: "curl --connect-timeout 15 --silent --show-error --fail http://127.0.0.1/health"
       timeout: 30s
@@ -58,6 +67,9 @@ services:
     ports:
       - "15672:15672" # rabbitmq
       - "80:80" # calendar
+    deploy:
+      mode: replicated
+      replicas: 1
     healthcheck:
       test: "curl --connect-timeout 15 --silent --show-error --fail http://127.0.0.1/health"
       timeout: 30s
