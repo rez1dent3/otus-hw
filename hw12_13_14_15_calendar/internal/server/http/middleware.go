@@ -1,13 +1,54 @@
 package internalhttp
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"time"
 )
 
-func loggingMiddleware(next http.Handler) http.Handler {
+type MiddlewareInterface interface {
+	Handle(http.Handler) http.Handler
+}
+
+type responseWriteStatusDecorator struct {
+	http.ResponseWriter
+	status int
+}
+
+type LoggerMiddleware struct {
+	logger Logger
+}
+
+func (w responseWriteStatusDecorator) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func NewLoggerMiddleware(logger Logger) MiddlewareInterface {
+	return &LoggerMiddleware{logger: logger}
+}
+
+func (m *LoggerMiddleware) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("hello")
-		next.ServeHTTP(w, r)
+		w2 := responseWriteStatusDecorator{
+			ResponseWriter: w,
+			status:         http.StatusOK,
+		}
+
+		now := time.Now()
+		next.ServeHTTP(w2, r)
+		latency := time.Now().Sub(now)
+
+		m.logger.Info(fmt.Sprintf(
+			"%s [%s] %s %s %s %d %d %s",
+			r.Header.Get("X-Forwarded-For"),
+			now.Format("02/Jan/2006:15:04:05 -0700"),
+			r.Method,
+			r.RequestURI,
+			r.Proto,
+			w2.status,
+			latency.Microseconds(),
+			r.Header.Get("User-Agent"),
+		))
 	})
 }

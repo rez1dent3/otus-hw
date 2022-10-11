@@ -41,7 +41,8 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}()
 
-	s.server = &http.Server{Addr: s.addr, Handler: loggingMiddleware(mux)}
+	loggerMiddleware := NewLoggerMiddleware(s.logger)
+	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux)}
 
 	return s.server.ListenAndServe()
 }

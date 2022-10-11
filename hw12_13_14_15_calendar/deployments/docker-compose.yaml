@@ -3,10 +3,13 @@ version: '3.8'
 services:
   postgres:
     image: bitnami/postgresql:14.5.0-debian-11-r25
+    ports:
+      - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      timeout: 45s
-      interval: 1s
+      test: ["CMD-SHELL", "pg_isready -U calendar_user"]
+      timeout: 5s
+      interval: 15s
+      start_period: 1s
       retries: 10
     deploy:
       mode: replicated
@@ -15,6 +18,8 @@ services:
       - POSTGRESQL_DATABASE=calendar
       - POSTGRESQL_USERNAME=calendar_user
       - POSTGRESQL_PASSWORD=calendar_pass
+    volumes:
+      - ../migrations:/docker-entrypoint-initdb.d
     networks:
       - app
 
@@ -22,8 +27,9 @@ services:
     image: rabbitmq:3.9.23-management-alpine
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      timeout: 30s
-      interval: 1s
+      timeout: 5s
+      interval: 15s
+      start_period: 1s
       retries: 10
     deploy:
       mode: replicated
@@ -47,9 +53,10 @@ services:
       mode: global
       replicas: 1
     healthcheck:
-      test: "curl --connect-timeout 15 --silent --show-error --fail http://127.0.0.1/health"
-      timeout: 30s
-      interval: 1s
+      test: "curl --connect-timeout 1 --silent --show-error --fail http://127.0.0.1/health"
+      timeout: 5s
+      interval: 25s
+      start_period: 1s
       retries: 10
     networks:
       - app
@@ -71,9 +78,10 @@ services:
       mode: replicated
       replicas: 1
     healthcheck:
-      test: "curl --connect-timeout 15 --silent --show-error --fail http://127.0.0.1/health"
-      timeout: 30s
-      interval: 1s
+      test: "curl --connect-timeout 1 --silent --show-error --fail http://127.0.0.1/health"
+      timeout: 1s
+      interval: 15s
+      start_period: 1s
       retries: 10
     volumes:
       - ./nginx/calendar.conf:/etc/nginx/conf.d/default.conf:ro
