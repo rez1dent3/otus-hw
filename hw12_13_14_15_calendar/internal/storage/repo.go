@@ -10,7 +10,7 @@ type EventRepoInterface interface {
 	UpdateEvent(eventId uuid.UUID, event Event) bool
 	DeleteEvent(eventId uuid.UUID) bool
 
-	ListEventToday(date time.Time) []Event
-	ListEventWeek(date time.Time) []Event
-	ListEventMonth(date time.Time) []Event
+	ListEventsDay(date time.Time) map[uuid.UUID]Event
+	ListEventsWeek(date time.Time) map[uuid.UUID]Event
+	ListEventsMonth(date time.Time) map[uuid.UUID]Event
 }
