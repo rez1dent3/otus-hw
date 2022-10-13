@@ -14,6 +14,14 @@ func TestUUID_ToString(t *testing.T) {
 		require.Equal(t, "00000000000000000000000000000000", hex.EncodeToString(val.ToBytes()))
 	})
 
+	t.Run("create from string", func(t *testing.T) {
+		str := "1f8c3858c5f948b4bc1186cd4ad4f1e4"
+		val := uuid.FromString(str)
+
+		require.Equal(t, "\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4", val.ToString())
+		require.Equal(t, "1f8c3858c5f948b4bc1186cd4ad4f1e4", hex.EncodeToString(val.ToBytes()))
+	})
+
 	t.Run("uuid check", func(t *testing.T) {
 		bytesInput := []byte("\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4")
 
