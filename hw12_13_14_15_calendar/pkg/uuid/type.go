@@ -1,14 +1,22 @@
 package uuid
 
+import (
+	"encoding/hex"
+)
+
 type UUID [16]byte
 
-func FromBytes(bytes []byte) UUID {
+func FromBytes(input []byte) UUID {
 	var result UUID
-	for key := range result {
-		result[key] = bytes[key]
-	}
+	copy(result[:], input)
 
 	return result
+}
+
+func FromString(input string) UUID {
+	inputBytes, _ := hex.DecodeString(input)
+
+	return FromBytes(inputBytes)
 }
 
 func (u *UUID) ToBytes() []byte {
