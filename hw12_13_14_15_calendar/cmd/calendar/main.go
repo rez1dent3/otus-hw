@@ -11,9 +11,10 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 )
 
 var configFile string
@@ -75,7 +76,8 @@ func main() {
 	logg.Debug("db driver: " + config.Storage.Driver)
 	calendar := app.New(logg, repo)
 
-	server := internalhttp.NewServer(logg, calendar, config.Server.Host, config.Server.Port)
+	serverGrpc := internalgrpc.NewServer(logg, calendar, config.Grpc.Host, config.Grpc.Port)
+	serverHttp := internalhttp.NewServer(logg, calendar, config.Http.Host, config.Http.Port)
 
 	go func() {
 		<-ctx.Done()
@@ -83,14 +85,27 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 
-		if err := server.Stop(ctx); err != nil {
+		if err := serverGrpc.Stop(ctx); err != nil {
+			logg.Error("failed to stop grpc server: " + err.Error())
+		}
+
+		if err := serverHttp.Stop(ctx); err != nil {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
 	logg.Info("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
+	go func() {
+		err := serverGrpc.Start(ctx)
+		if err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+			cancel()
+			os.Exit(1) //nolint:gocritic
+		}
+	}()
+
+	if err := serverHttp.Start(ctx); err != nil {
 		logg.Error("failed to start http server: " + err.Error())
 		cancel()
 		os.Exit(1) //nolint:gocritic

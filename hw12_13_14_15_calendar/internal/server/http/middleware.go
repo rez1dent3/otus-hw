@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 )
 
 type MiddlewareInterface interface {
@@ -16,7 +18,7 @@ type responseWriteStatusDecorator struct {
 }
 
 type LoggerMiddleware struct {
-	logger Logger
+	logger *logger.Logger
 }
 
 func (w *responseWriteStatusDecorator) WriteHeader(status int) {
@@ -28,7 +30,7 @@ func (w *responseWriteStatusDecorator) GetStatus() int {
 	return w.status
 }
 
-func NewLoggerMiddleware(logger Logger) MiddlewareInterface {
+func NewLoggerMiddleware(logger *logger.Logger) MiddlewareInterface {
 	return &LoggerMiddleware{logger: logger}
 }
 

@@ -5,27 +5,20 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/actions"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 )
 
 type Server struct {
 	addr   string
-	app    Application
-	logger Logger
+	app    app.Application
+	logger *logger.Logger
 
 	server *http.Server
 }
 
-type Logger interface {
-	Error(string)
-	Warning(string)
-	Info(string)
-	Debug(string)
-}
-
-type Application interface{}
-
-func NewServer(logger Logger, app Application, host string, port string) *Server {
+func NewServer(logger *logger.Logger, app app.Application, host string, port string) *Server {
 	return &Server{logger: logger, app: app, addr: host + ":" + port}
 }
 

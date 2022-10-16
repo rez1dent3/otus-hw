@@ -5,19 +5,17 @@ import (
 	"time"
 
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 )
 
-type App struct {
-	logger  Logger
-	storage Storage
+type Application interface {
+	CreateEvent(ctx context.Context, id, title string) error
 }
 
-type Logger interface {
-	Error(string)
-	Warning(string)
-	Info(string)
-	Debug(string)
+type App struct {
+	logger  *logger.Logger
+	storage Storage
 }
 
 type Storage interface {
@@ -30,7 +28,7 @@ type Storage interface {
 	ListEventsMonth(uuid.UUID, time.Time) map[uuid.UUID]storage.Event
 }
 
-func New(logger Logger, storage Storage) *App {
+func New(logger *logger.Logger, storage Storage) *App {
 	return &App{logger: logger, storage: storage}
 }
 
