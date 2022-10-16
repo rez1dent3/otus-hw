@@ -1,61 +1,65 @@
-package memorystorage
+package storage
 
 import (
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"sync"
 	"time"
 )
 
-type Storage struct {
-	events map[uuid.UUID]storage.Event
+type MemStorage struct {
+	events map[uuid.UUID]Event
 	mu     sync.RWMutex
 }
 
-func New() *Storage {
-	return &Storage{events: make(map[uuid.UUID]storage.Event)}
+func NewMemStorage() *MemStorage {
+	return &MemStorage{events: make(map[uuid.UUID]Event)}
 }
 
-func (s *Storage) CreateEvent(event storage.Event) bool {
+func (s *MemStorage) CreateEvent(event Event) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	if _, ok := s.events[event.ID]; ok {
+		return false
+	}
 
 	s.events[event.ID] = event
 
 	return true
 }
 
-func (s *Storage) UpdateEvent(eventId uuid.UUID, event storage.Event) bool {
+func (s *MemStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.events[eventId]; !ok {
+	if _, ok := s.events[eventID]; !ok {
 		return false
 	}
 
-	s.events[eventId] = event
+	s.events[eventID] = event
 
 	return true
 }
 
-func (s *Storage) DeleteEvent(eventId uuid.UUID) bool {
+func (s *MemStorage) DeleteEvent(eventID uuid.UUID) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.events[eventId]; !ok {
+	if _, ok := s.events[eventID]; !ok {
 		return false
 	}
 
-	delete(s.events, eventId)
+	delete(s.events, eventID)
 
 	return true
 }
 
-func (s *Storage) ListEventsDay(date time.Time) map[uuid.UUID]storage.Event {
+func (s *MemStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	return s.listBy(
+		userID,
 		date,
 		func(date, startAt, endAt time.Time) bool {
 			if date.Equal(startAt) || date.Equal(endAt) {
@@ -67,11 +71,12 @@ func (s *Storage) ListEventsDay(date time.Time) map[uuid.UUID]storage.Event {
 	)
 }
 
-func (s *Storage) ListEventsWeek(date time.Time) map[uuid.UUID]storage.Event {
+func (s *MemStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	return s.listBy(
+		userID,
 		date,
 		func(date, startAt, endAt time.Time) bool {
 			startYear, startWeek := startAt.ISOWeek()
@@ -90,11 +95,12 @@ func (s *Storage) ListEventsWeek(date time.Time) map[uuid.UUID]storage.Event {
 	)
 }
 
-func (s *Storage) ListEventsMonth(date time.Time) map[uuid.UUID]storage.Event {
+func (s *MemStorage) ListEventsMonth(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	return s.listBy(
+		userID,
 		date,
 		func(date, startAt, endAt time.Time) bool {
 			if date.Equal(startAt) || date.Equal(endAt) {
@@ -120,15 +126,19 @@ func weekStart(year, week int) time.Time {
 	return t
 }
 
-func (s *Storage) listBy(date time.Time, cmp func(date, startAt, endAt time.Time) bool) map[uuid.UUID]storage.Event {
+func (s *MemStorage) listBy(userID uuid.UUID, date time.Time, cmp func(date, startAt, endAt time.Time) bool) map[uuid.UUID]Event {
 	truncateDate := func(date time.Time) time.Time {
 		utc := date.UTC()
 		return time.Date(utc.Year(), utc.Month(), utc.Day(), 0, 0, 0, 0, time.UTC)
 	}
 
 	utc := truncateDate(date)
-	result := make(map[uuid.UUID]storage.Event)
+	result := make(map[uuid.UUID]Event)
 	for _, event := range s.events {
+		if event.UserID.ToString() != userID.ToString() {
+			continue
+		}
+
 		if cmp(utc, truncateDate(event.StartAt), truncateDate(event.EndAt)) {
 			result[event.ID] = event
 		}

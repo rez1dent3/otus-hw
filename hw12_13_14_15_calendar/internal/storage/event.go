@@ -6,13 +6,13 @@ import (
 )
 
 type Event struct {
-	ID          uuid.UUID
-	Title       string
-	Description string
-	StartAt     time.Time
-	EndAt       time.Time
-	UserID      uuid.UUID
-	RemindFor   uint32
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uuid.UUID `db:"id"`
+	Title       string    `db:"title"`
+	Description string    `db:"description"`
+	StartAt     time.Time `db:"start_at"`
+	EndAt       time.Time `db:"end_at"`
+	UserID      uuid.UUID `db:"user_id"`
+	RemindFor   uint32    `db:"remind_for"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
 }
