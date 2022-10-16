@@ -7,9 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type UUID [16]byte
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 func Gen() UUID {
 	input := make([]byte, 16)
