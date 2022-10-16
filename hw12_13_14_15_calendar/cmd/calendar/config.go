@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Logger   LoggerConf
 	Server   ServerConf
-	Database DbConf
+	Database DBConf
 	Storage  StorageConf
 }
 
@@ -22,7 +22,7 @@ type ServerConf struct {
 	Port string
 }
 
-type DbConf struct {
+type DBConf struct {
 	Dsn string
 }
 

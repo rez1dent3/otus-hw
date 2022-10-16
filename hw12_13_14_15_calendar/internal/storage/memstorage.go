@@ -1,9 +1,10 @@
 package storage
 
 import (
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"sync"
 	"time"
+
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 )
 
 type MemStorage struct {
@@ -126,7 +127,11 @@ func weekStart(year, week int) time.Time {
 	return t
 }
 
-func (s *MemStorage) listBy(userID uuid.UUID, date time.Time, cmp func(date, startAt, endAt time.Time) bool) map[uuid.UUID]Event {
+func (s *MemStorage) listBy(
+	userID uuid.UUID,
+	date time.Time,
+	cmp func(date, startAt, endAt time.Time) bool,
+) map[uuid.UUID]Event {
 	truncateDate := func(date time.Time) time.Time {
 		utc := date.UTC()
 		return time.Date(utc.Year(), utc.Month(), utc.Day(), 0, 0, 0, 0, time.UTC)
