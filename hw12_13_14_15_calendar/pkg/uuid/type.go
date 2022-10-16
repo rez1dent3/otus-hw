@@ -13,9 +13,8 @@ type UUID [16]byte
 
 func Gen() UUID {
 	input := make([]byte, 16)
-	_, err := rand.Read(input)
-	if err != nil {
-		return [16]byte{}
+	if _, err := rand.Read(input); err != nil {
+		return UUID{}
 	}
 
 	return FromBytes(input)
@@ -43,19 +42,17 @@ func (u *UUID) String() string {
 }
 
 func (u *UUID) Scan(src interface{}) error {
-	switch src.(type) {
-	case string:
-		*u = FromString(src.(string))
+	if val, ok := src.(string); ok {
+		*u = FromString(val)
 		return nil
-	case []byte:
-		*u = FromBytes(src.([]byte))
-		return nil
-	case UUID:
-		*u = src.(UUID)
-		return nil
-	default:
-		return errors.New("invalid type")
 	}
+
+	if val, ok := src.([]byte); ok {
+		*u = FromBytes(val)
+		return nil
+	}
+
+	return errors.New("invalid type")
 }
 
 func (u UUID) Value() (driver.Value, error) {

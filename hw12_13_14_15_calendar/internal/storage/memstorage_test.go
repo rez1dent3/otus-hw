@@ -58,7 +58,7 @@ func TestMemStorage_Update(t *testing.T) {
 func TestMemStorage_Delete(t *testing.T) {
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
 		storage := storage2.NewMemStorage()
-		event1 := storage2.Event{ID: uuid.Gen()}
+		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 0)
 		success := storage.DeleteEvent(event1.ID)
 		require.False(t, success)
@@ -66,7 +66,7 @@ func TestMemStorage_Delete(t *testing.T) {
 
 	t.Run("DeleteEvent.exists", func(t *testing.T) {
 		storage := storage2.NewMemStorage()
-		event1 := storage2.Event{ID: uuid.Gen()}
+		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 		success := storage.CreateEvent(event1)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 1)
@@ -96,10 +96,12 @@ func TestMemStorage_List(t *testing.T) {
 
 		for _, input := range inputs {
 			storage.CreateEvent(
-				storage2.Event{ID: input.eventID,
+				storage2.Event{
+					ID:      input.eventID,
 					UserID:  input.userID,
 					StartAt: input.date,
-					EndAt:   input.date})
+					EndAt:   input.date,
+				})
 		}
 
 		require.Len(t, storage.ListEventsDay(user1, now.AddDate(0, 0, -1)), 1)

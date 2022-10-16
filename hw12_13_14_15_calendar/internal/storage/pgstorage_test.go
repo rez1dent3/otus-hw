@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var dsn = "host=127.0.0.1 port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
+const dsn = "host=127.0.0.1 port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
 
 func TestPgStorage_Create(t *testing.T) {
 	t.Skip()
@@ -46,7 +46,7 @@ func TestPgStorage_Create(t *testing.T) {
 }
 
 func TestPgStorage_Update(t *testing.T) {
-	//t.Skip()
+	t.Skip()
 
 	storage := storage2.NewPgStorage(dsn)
 	storage.Connect(context.Background())
@@ -76,14 +76,14 @@ func TestPgStorage_Delete(t *testing.T) {
 	defer storage.Close()
 
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
-		event1 := storage2.Event{ID: uuid.Gen()}
+		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 0)
 		success := storage.DeleteEvent(event1.ID)
 		require.False(t, success)
 	})
 
 	t.Run("DeleteEvent.exists", func(t *testing.T) {
-		event1 := storage2.Event{ID: uuid.Gen()}
+		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 		success := storage.CreateEvent(event1)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 1)
@@ -118,10 +118,12 @@ func TestPgStorage_List(t *testing.T) {
 
 		for _, input := range inputs {
 			storage.CreateEvent(
-				storage2.Event{ID: input.eventID,
+				storage2.Event{
+					ID:      input.eventID,
 					UserID:  input.userID,
 					StartAt: input.date,
-					EndAt:   input.date})
+					EndAt:   input.date,
+				})
 		}
 
 		require.Len(t, storage.ListEventsDay(user1, now.AddDate(0, 0, -1)), 1)

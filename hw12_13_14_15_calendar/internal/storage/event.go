@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"time"
+
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 )
 
 type Event struct {

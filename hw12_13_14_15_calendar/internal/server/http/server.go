@@ -2,9 +2,10 @@ package internalhttp
 
 import (
 	"context"
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/actions"
 	"net/http"
 	"time"
+
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/actions"
 )
 
 type Server struct {
@@ -22,8 +23,7 @@ type Logger interface {
 	Debug(string)
 }
 
-type Application interface {
-}
+type Application interface{}
 
 func NewServer(logger Logger, app Application, host string, port string) *Server {
 	return &Server{logger: logger, app: app, addr: host + ":" + port}
