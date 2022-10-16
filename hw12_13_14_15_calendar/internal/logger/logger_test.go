@@ -2,10 +2,10 @@ package logger_test
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/logger"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLogger(t *testing.T) {

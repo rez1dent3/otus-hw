@@ -4,6 +4,6 @@ server:
   host: 0.0.0.0
   port: 80
 database:
-  dns: "host=postgres port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
+  dsn: "host=postgres port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
 storage:
-  driver: "memory" # postgres
+  driver: "postgres" # memory

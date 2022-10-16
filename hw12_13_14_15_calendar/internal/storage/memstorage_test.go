@@ -1,14 +1,15 @@
 package storage_test
 
 import (
+	"testing"
+	"time"
+
 	storage2 "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
-func TestMemStorage_CRUD(t *testing.T) {
+func TestMemStorage_Create(t *testing.T) {
 	t.Run("CreateEvent.notExists", func(t *testing.T) {
 		storage := storage2.NewMemStorage()
 		event := storage2.Event{}
@@ -34,7 +35,9 @@ func TestMemStorage_CRUD(t *testing.T) {
 		require.False(t, loss)
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 1)
 	})
+}
 
+func TestMemStorage_Update(t *testing.T) {
 	t.Run("UpdateEvent", func(t *testing.T) {
 		storage := storage2.NewMemStorage()
 		event1 := storage2.Event{}
@@ -50,7 +53,9 @@ func TestMemStorage_CRUD(t *testing.T) {
 		require.Len(t, storage.ListEventsMonth(event2.UserID, event2.StartAt), 1)
 		require.True(t, success)
 	})
+}
 
+func TestMemStorage_Delete(t *testing.T) {
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
 		storage := storage2.NewMemStorage()
 		event1 := storage2.Event{}
@@ -70,7 +75,9 @@ func TestMemStorage_CRUD(t *testing.T) {
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 0)
 	})
+}
 
+func TestMemStorage_List(t *testing.T) {
 	t.Run("list.filterByUserID", func(t *testing.T) {
 		now := time.Now()
 		inputs := []struct {
@@ -169,5 +176,4 @@ func TestMemStorage_CRUD(t *testing.T) {
 		require.Len(t, storage.ListEventsMonth(userID, now), 1)
 		require.Len(t, storage.ListEventsMonth(userID, now.AddDate(0, 1, 0)), 1)
 	})
-
 }
