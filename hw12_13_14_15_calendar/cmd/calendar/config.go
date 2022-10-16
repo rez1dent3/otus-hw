@@ -7,8 +7,10 @@ import (
 )
 
 type Config struct {
-	Logger LoggerConf
-	Server ServerConf
+	Logger   LoggerConf
+	Server   ServerConf
+	Database DbConf
+	Storage  StorageConf
 }
 
 type LoggerConf struct {
@@ -18,6 +20,14 @@ type LoggerConf struct {
 type ServerConf struct {
 	Host string
 	Port string
+}
+
+type DbConf struct {
+	Dsn string
+}
+
+type StorageConf struct {
+	Driver string
 }
 
 func NewConfig(reader io.Reader) (*Config, error) {
