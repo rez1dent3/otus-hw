@@ -2,22 +2,19 @@ package storage_test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	storage2 "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"testing"
-	"time"
 )
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
+var dsn = "host=127.0.0.1 port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
 
-func TestPgStorage_CRUD(t *testing.T) {
+func TestPgStorage_Create(t *testing.T) {
 	t.Skip()
 
-	dsn := "host=127.0.0.1 port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
 	storage := storage2.NewPgStorage(dsn)
 	storage.Connect(context.Background())
 	defer storage.Close()
@@ -45,11 +42,19 @@ func TestPgStorage_CRUD(t *testing.T) {
 		require.False(t, loss)
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 1)
 	})
+}
+
+func TestPgStorage_Update(t *testing.T) {
+	//t.Skip()
+
+	storage := storage2.NewPgStorage(dsn)
+	storage.Connect(context.Background())
+	defer storage.Close()
 
 	t.Run("UpdateEvent", func(t *testing.T) {
 		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
-		//loss := storage.UpdateEvent(event1.ID, event1)
-		//require.False(t, loss)
+		loss := storage.UpdateEvent(event1.ID, event1)
+		require.False(t, loss)
 
 		success := storage.CreateEvent(event1)
 		require.True(t, success)
@@ -60,6 +65,14 @@ func TestPgStorage_CRUD(t *testing.T) {
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event2.UserID, event2.StartAt), 1)
 	})
+}
+
+func TestPgStorage_Delete(t *testing.T) {
+	t.Skip()
+
+	storage := storage2.NewPgStorage(dsn)
+	storage.Connect(context.Background())
+	defer storage.Close()
 
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
 		event1 := storage2.Event{ID: uuid.Gen()}
@@ -78,6 +91,14 @@ func TestPgStorage_CRUD(t *testing.T) {
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 0)
 	})
+}
+
+func TestPgStorage_List(t *testing.T) {
+	t.Skip()
+
+	storage := storage2.NewPgStorage(dsn)
+	storage.Connect(context.Background())
+	defer storage.Close()
 
 	t.Run("list.filterByUserID", func(t *testing.T) {
 		user1 := uuid.Gen()

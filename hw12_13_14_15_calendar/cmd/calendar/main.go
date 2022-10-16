@@ -45,21 +45,36 @@ func main() {
 		return
 	}
 
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
+
 	logg := logger.New(config.Logger.Level, os.Stdout)
 	var repo app.Storage
 	if config.Storage.Driver == "postgres" {
-		repo = storage.NewPgStorage(config.Database.Dsn)
+		pgStorage := storage.NewPgStorage(config.Database.Dsn)
+		err := pgStorage.Connect(ctx)
+		if err != nil {
+			logg.Error(err.Error())
+			return
+		}
+
+		defer func(pgStorage *storage.PgStorage) {
+			err := pgStorage.Close()
+			if err != nil {
+				logg.Error(err.Error())
+			}
+		}(pgStorage)
+
+		repo = pgStorage
 	} else {
 		repo = storage.NewMemStorage()
 	}
 
+	logg.Debug("db driver: " + config.Storage.Driver)
 	calendar := app.New(logg, repo)
 
 	server := internalhttp.NewServer(logg, calendar, config.Server.Host, config.Server.Port)
-
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
 
 	go func() {
 		<-ctx.Done()

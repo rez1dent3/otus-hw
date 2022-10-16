@@ -19,9 +19,13 @@ type LoggerMiddleware struct {
 	logger Logger
 }
 
-func (w responseWriteStatusDecorator) WriteHeader(status int) {
+func (w *responseWriteStatusDecorator) WriteHeader(status int) {
 	w.status = status
 	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *responseWriteStatusDecorator) GetStatus() int {
+	return w.status
 }
 
 func NewLoggerMiddleware(logger Logger) MiddlewareInterface {
@@ -36,8 +40,8 @@ func (m *LoggerMiddleware) Handle(next http.Handler) http.Handler {
 		}
 
 		now := time.Now()
-		next.ServeHTTP(w2, r)
-		latency := time.Now().Sub(now)
+		next.ServeHTTP(&w2, r)
+		latency := time.Since(now)
 
 		m.logger.Info(fmt.Sprintf(
 			"%s [%s] %s %s %s %d %d %s",
@@ -46,7 +50,7 @@ func (m *LoggerMiddleware) Handle(next http.Handler) http.Handler {
 			r.Method,
 			r.RequestURI,
 			r.Proto,
-			w2.status,
+			w2.GetStatus(),
 			latency.Microseconds(),
 			r.Header.Get("User-Agent"),
 		))
