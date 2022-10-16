@@ -2,9 +2,10 @@ package uuid_test
 
 import (
 	"encoding/hex"
+	"testing"
+
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestUUID_ToString(t *testing.T) {

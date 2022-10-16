@@ -43,7 +43,6 @@ func (s *PgStorage) CreateEvent(event Event) bool {
     		VALUES 
     			(:id, :title, :description, :start_at, :end_at, :user_id, NOW(), NOW());`,
 		event)
-
 	if err != nil {
 		return false
 	}
@@ -81,7 +80,6 @@ func (s *PgStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
 		event.UserID,
 		eventID,
 	)
-
 	if err != nil {
 		return false
 	}
@@ -122,10 +120,13 @@ func (s *PgStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUI
 			WHERE user_id=$1 AND
         		date_trunc('day', $2::date)::date BETWEEN 
         			date_trunc('day', start_at)::date AND end_at::date`, userID, date)
-
 	if err != nil {
 		return nil
 	}
+
+	defer func() {
+		rows.Close()
+	}()
 
 	result := make(map[uuid.UUID]Event)
 	event := Event{}
@@ -153,10 +154,13 @@ func (s *PgStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UU
 			WHERE user_id=$1 AND
         		date_trunc('week', $2::date)::date BETWEEN 
         			date_trunc('week', start_at)::date AND end_at::date`, userID, date)
-
 	if err != nil {
 		return nil
 	}
+
+	defer func() {
+		rows.Close()
+	}()
 
 	result := make(map[uuid.UUID]Event)
 	event := Event{}
@@ -184,10 +188,13 @@ func (s *PgStorage) ListEventsMonth(userID uuid.UUID, date time.Time) map[uuid.U
 			WHERE user_id=$1 AND
         		date_trunc('month', $2::date)::date BETWEEN 
         			date_trunc('month', start_at)::date AND end_at::date`, userID, date)
-
 	if err != nil {
 		return nil
 	}
+
+	defer func() {
+		rows.Close()
+	}()
 
 	result := make(map[uuid.UUID]Event)
 	event := Event{}

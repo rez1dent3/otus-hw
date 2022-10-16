@@ -32,7 +32,7 @@ func main() {
 
 	file, err := os.Open(configFile)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return
 	}
 
@@ -42,7 +42,7 @@ func main() {
 
 	config, err := NewConfig(file)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return
 	}
 
