@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
+	"time"
 )
 
 type App struct {
@@ -17,6 +20,13 @@ type Logger interface {
 }
 
 type Storage interface {
+	CreateEvent(event storage.Event) bool
+	UpdateEvent(uuid.UUID, storage.Event) bool
+	DeleteEvent(uuid.UUID) bool
+
+	ListEventsDay(uuid.UUID, time.Time) map[uuid.UUID]storage.Event
+	ListEventsWeek(uuid.UUID, time.Time) map[uuid.UUID]storage.Event
+	ListEventsMonth(uuid.UUID, time.Time) map[uuid.UUID]storage.Event
 }
 
 func New(logger Logger, storage Storage) *App {

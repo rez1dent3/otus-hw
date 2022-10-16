@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	memorystorage "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"log"
 	"os"
 	"os/signal"
@@ -13,6 +12,7 @@ import (
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 )
 
 var configFile string
@@ -46,8 +46,14 @@ func main() {
 	}
 
 	logg := logger.New(config.Logger.Level, os.Stdout)
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	var repo app.Storage
+	if config.Storage.Driver == "postgres" {
+		repo = storage.NewPgStorage(config.Database.Dsn)
+	} else {
+		repo = storage.NewMemStorage()
+	}
+
+	calendar := app.New(logg, repo)
 
 	server := internalhttp.NewServer(logg, calendar, config.Server.Host, config.Server.Port)
 
