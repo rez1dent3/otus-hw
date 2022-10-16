@@ -135,7 +135,7 @@ func (s *MemStorage) listBy(userID uuid.UUID, date time.Time, cmp func(date, sta
 	utc := truncateDate(date)
 	result := make(map[uuid.UUID]Event)
 	for _, event := range s.events {
-		if event.UserID.ToString() != userID.ToString() {
+		if event.UserID.String() != userID.String() {
 			continue
 		}
 

@@ -10,7 +10,7 @@ import (
 func TestUUID_ToString(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		val := uuid.UUID{}
-		require.Equal(t, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", val.ToString())
+		require.Equal(t, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", string(val.ToBytes()))
 		require.Equal(t, "00000000000000000000000000000000", hex.EncodeToString(val.ToBytes()))
 	})
 
@@ -18,8 +18,15 @@ func TestUUID_ToString(t *testing.T) {
 		str := "1f8c3858c5f948b4bc1186cd4ad4f1e4"
 		val := uuid.FromString(str)
 
-		require.Equal(t, "\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4", val.ToString())
+		require.Equal(t, "\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4", string(val.ToBytes()))
 		require.Equal(t, "1f8c3858c5f948b4bc1186cd4ad4f1e4", hex.EncodeToString(val.ToBytes()))
+	})
+
+	t.Run("create from human-string", func(t *testing.T) {
+		str := "b652d5a5-9c51-4220-9574-6cc053b90268"
+		val := uuid.FromString(str)
+
+		require.Equal(t, "b652d5a59c51422095746cc053b90268", hex.EncodeToString(val.ToBytes()))
 	})
 
 	t.Run("uuid check", func(t *testing.T) {
@@ -30,7 +37,14 @@ func TestUUID_ToString(t *testing.T) {
 
 		actual := uuid.FromBytes(bytesInput)
 
-		require.Equal(t, "\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4", actual.ToString())
+		require.Equal(t, "\x1f\x8c\x38\x58\xc5\xf9\x48\xb4\xbc\x11\x86\xcd\x4a\xd4\xf1\xe4", string(actual.ToBytes()))
 		require.Equal(t, "1f8c3858c5f948b4bc1186cd4ad4f1e4", hex.EncodeToString(actual.ToBytes()))
+	})
+
+	t.Run("uuid human", func(t *testing.T) {
+		uuidResult := "b652d5a5-9c51-4220-9574-6cc053b90268"
+		val := uuid.FromString(uuidResult)
+
+		require.Equal(t, uuidResult, val.String())
 	})
 }
