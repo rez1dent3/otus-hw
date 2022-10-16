@@ -2,9 +2,9 @@ package logger_test
 
 import (
 	"bytes"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 	"testing"
 
-	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/logger"
 	"github.com/stretchr/testify/require"
 )
 
