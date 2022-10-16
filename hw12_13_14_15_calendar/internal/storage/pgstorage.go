@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 )
 
@@ -30,12 +29,7 @@ func (s *PgStorage) Connect(ctx context.Context) error {
 }
 
 func (s *PgStorage) Close() error {
-	err := s.db.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.db.Close()
 }
 
 func (s *PgStorage) CreateEvent(event Event) bool {

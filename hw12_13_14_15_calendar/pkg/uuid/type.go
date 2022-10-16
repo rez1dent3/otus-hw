@@ -1,24 +1,22 @@
 package uuid
 
 import (
+	"crypto/rand"
 	"database/sql/driver"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strings"
-	"time"
 )
 
 type UUID [16]byte
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
-
 func Gen() UUID {
 	input := make([]byte, 16)
-	rand.Read(input)
+	_, err := rand.Read(input)
+	if err != nil {
+		return [16]byte{}
+	}
 
 	return FromBytes(input)
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/lib/pq"
 	storage2 "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"github.com/stretchr/testify/require"

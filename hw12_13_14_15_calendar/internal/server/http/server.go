@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/actions"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -42,7 +43,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}()
 
 	loggerMiddleware := NewLoggerMiddleware(s.logger)
-	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux)}
+	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux), ReadHeaderTimeout: time.Second}
 
 	return s.server.ListenAndServe()
 }

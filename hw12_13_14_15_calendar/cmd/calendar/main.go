@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/lib/pq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http"
