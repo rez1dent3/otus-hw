@@ -12,7 +12,7 @@ type Event struct {
 	StartAt     time.Time `db:"start_at"`
 	EndAt       time.Time `db:"end_at"`
 	UserID      uuid.UUID `db:"user_id"`
-	RemindFor   uint32    `db:"remind_for"`
+	RemindFor   *uint32   `db:"remind_for"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }

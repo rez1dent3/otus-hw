@@ -1,42 +1,43 @@
-package storage
+package storage_test
 
 import (
+	storage2 "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
 
-func TestStorage_CRUD(t *testing.T) {
+func TestMemStorage_CRUD(t *testing.T) {
 	t.Run("CreateEvent.notExists", func(t *testing.T) {
-		storage := NewMemStorage()
-		event := Event{}
+		storage := storage2.NewMemStorage()
+		event := storage2.Event{}
 
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 0)
-		success := storage.CreateEvent(Event{})
+		success := storage.CreateEvent(storage2.Event{})
 
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 1)
 	})
 
 	t.Run("CreateEvent.exists", func(t *testing.T) {
-		storage := NewMemStorage()
-		event := Event{}
+		storage := storage2.NewMemStorage()
+		event := storage2.Event{}
 
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 0)
-		success := storage.CreateEvent(Event{})
+		success := storage.CreateEvent(storage2.Event{})
 
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 1)
 
-		loss := storage.CreateEvent(Event{})
+		loss := storage.CreateEvent(storage2.Event{})
 		require.False(t, loss)
 		require.Len(t, storage.ListEventsMonth(event.UserID, event.StartAt), 1)
 	})
 
 	t.Run("UpdateEvent", func(t *testing.T) {
-		storage := NewMemStorage()
-		event1 := Event{}
+		storage := storage2.NewMemStorage()
+		event1 := storage2.Event{}
 		loss := storage.UpdateEvent(event1.ID, event1)
 		require.False(t, loss)
 
@@ -44,23 +45,23 @@ func TestStorage_CRUD(t *testing.T) {
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 1)
 
-		event2 := Event{ID: event1.ID, Title: "hello"}
+		event2 := storage2.Event{ID: event1.ID, Title: "hello"}
 		success = storage.UpdateEvent(event2.ID, event2)
 		require.Len(t, storage.ListEventsMonth(event2.UserID, event2.StartAt), 1)
 		require.True(t, success)
 	})
 
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
-		storage := NewMemStorage()
-		event1 := Event{}
+		storage := storage2.NewMemStorage()
+		event1 := storage2.Event{}
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 0)
 		success := storage.DeleteEvent(event1.ID)
 		require.False(t, success)
 	})
 
 	t.Run("DeleteEvent.exists", func(t *testing.T) {
-		storage := NewMemStorage()
-		event1 := Event{}
+		storage := storage2.NewMemStorage()
+		event1 := storage2.Event{}
 		success := storage.CreateEvent(event1)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(event1.UserID, event1.StartAt), 1)
@@ -82,10 +83,10 @@ func TestStorage_CRUD(t *testing.T) {
 			{eventID: "6f2742e521944580af42533708ff2970", userID: "69d3583e60c2436b85679fb836e6aab2", date: now.AddDate(0, 0, 1)},
 		}
 
-		storage := NewMemStorage()
+		storage := storage2.NewMemStorage()
 		for _, input := range inputs {
 			storage.CreateEvent(
-				Event{ID: uuid.FromString(input.eventID),
+				storage2.Event{ID: uuid.FromString(input.eventID),
 					UserID:  uuid.FromString(input.userID),
 					StartAt: input.date,
 					EndAt:   input.date})
@@ -113,9 +114,9 @@ func TestStorage_CRUD(t *testing.T) {
 
 		userID := uuid.FromString("571548163f594e5f9fcaba2661a1ac88")
 
-		storage := NewMemStorage()
+		storage := storage2.NewMemStorage()
 		for _, input := range inputs {
-			storage.CreateEvent(Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(storage2.Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsDay(userID, now.AddDate(0, 0, -1)), 1)
@@ -136,9 +137,9 @@ func TestStorage_CRUD(t *testing.T) {
 
 		userID := uuid.FromString("571548163f594e5f9fcaba2661a1ac88")
 
-		storage := NewMemStorage()
+		storage := storage2.NewMemStorage()
 		for _, input := range inputs {
-			storage.CreateEvent(Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(storage2.Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsWeek(userID, now.AddDate(0, 0, -7)), 1)
@@ -159,9 +160,9 @@ func TestStorage_CRUD(t *testing.T) {
 
 		userID := uuid.FromString("571548163f594e5f9fcaba2661a1ac88")
 
-		storage := NewMemStorage()
+		storage := storage2.NewMemStorage()
 		for _, input := range inputs {
-			storage.CreateEvent(Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(storage2.Event{ID: uuid.FromString(input.uuid), UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsMonth(userID, now.AddDate(0, 1, 0)), 1)

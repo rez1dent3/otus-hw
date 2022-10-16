@@ -38,51 +38,72 @@ func (s *PgStorage) Close() error {
 }
 
 func (s *PgStorage) CreateEvent(event Event) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	_, err := s.db.NamedExecContext(
+	rows, err := s.db.NamedExecContext(
 		ctx,
 		`INSERT INTO events 
     			(id, title, description, start_at, end_at, user_id, created_at, updated_at) 
     		VALUES 
-    			(:id, :title, :description, :start_at, :end_at, :user_id, NOW(), NOW())`, event)
+    			(:id, :title, :description, :start_at, :end_at, :user_id, NOW(), NOW());`,
+		event)
 
 	if err != nil {
 		return false
 	}
 
-	return true
+	affected, err := rows.RowsAffected()
+	if err != nil {
+		return false
+	}
+
+	return affected > 0
 }
 
 func (s *PgStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	_, err := s.db.NamedExecContext(
+	rows, err := s.db.ExecContext(
 		ctx,
 		`UPDATE events 
     		SET
-    		    title=:title,
-    		    description=:description,
-    		    start_at=:start_at,
-    		    end_at=:end_at,
+    		    title=$1,
+    		    description=$2,
+    		    start_at=$3,
+    		    end_at=$4,
+    		    remind_for=$5,
+    		    user_id=$6,
     		    updated_at=NOW()
     		WHERE
-    		    id=:id`, event)
+    		    id=$7`,
+		event.Title,
+		event.Description,
+		event.StartAt,
+		event.EndAt,
+		event.RemindFor,
+		event.UserID,
+		eventID,
+	)
 
 	if err != nil {
 		return false
 	}
 
-	return true
+	affected, err := rows.RowsAffected()
+	if err != nil {
+		return false
+	}
+
+	return affected > 0
 }
 
 func (s *PgStorage) DeleteEvent(eventID uuid.UUID) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Microsecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	execContext, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE id=?`, eventID)
+	execContext, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE id=$1`, eventID)
 	if err != nil {
 		return false
 	}
@@ -96,13 +117,94 @@ func (s *PgStorage) DeleteEvent(eventID uuid.UUID) bool {
 }
 
 func (s *PgStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	panic("ListEventsDay")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	rows, err := s.db.QueryxContext(
+		ctx,
+		`SELECT *
+			FROM events
+			WHERE user_id=$1 AND
+        		date_trunc('day', $2::date)::date BETWEEN 
+        			date_trunc('day', start_at)::date AND end_at::date`, userID, date)
+
+	if err != nil {
+		return nil
+	}
+
+	result := make(map[uuid.UUID]Event)
+	event := Event{}
+	for rows.Next() {
+		err := rows.StructScan(&event)
+		if err != nil {
+			return nil
+		}
+
+		event := event
+		result[event.ID] = event
+	}
+
+	return result
 }
 
 func (s *PgStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	panic("ListEventsWeek")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	rows, err := s.db.QueryxContext(
+		ctx,
+		`SELECT *
+			FROM events
+			WHERE user_id=$1 AND
+        		date_trunc('week', $2::date)::date BETWEEN 
+        			date_trunc('week', start_at)::date AND end_at::date`, userID, date)
+
+	if err != nil {
+		return nil
+	}
+
+	result := make(map[uuid.UUID]Event)
+	event := Event{}
+	for rows.Next() {
+		err := rows.StructScan(&event)
+		if err != nil {
+			return nil
+		}
+
+		event := event
+		result[event.ID] = event
+	}
+
+	return result
 }
 
 func (s *PgStorage) ListEventsMonth(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	panic("ListEventsMonth")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	rows, err := s.db.QueryxContext(
+		ctx,
+		`SELECT *
+			FROM events
+			WHERE user_id=$1 AND
+        		date_trunc('month', $2::date)::date BETWEEN 
+        			date_trunc('month', start_at)::date AND end_at::date`, userID, date)
+
+	if err != nil {
+		return nil
+	}
+
+	result := make(map[uuid.UUID]Event)
+	event := Event{}
+	for rows.Next() {
+		err := rows.StructScan(&event)
+		if err != nil {
+			return nil
+		}
+
+		event := event
+		result[event.ID] = event
+	}
+
+	return result
 }

@@ -1,10 +1,22 @@
 package uuid
 
 import (
+	"database/sql/driver"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"math/rand"
+	"strings"
 )
 
 type UUID [16]byte
+
+func Gen() UUID {
+	input := make([]byte, 16)
+	rand.Read(input)
+
+	return FromBytes(input)
+}
 
 func FromBytes(input []byte) UUID {
 	var result UUID
@@ -14,7 +26,7 @@ func FromBytes(input []byte) UUID {
 }
 
 func FromString(input string) UUID {
-	inputBytes, _ := hex.DecodeString(input)
+	inputBytes, _ := hex.DecodeString(strings.ReplaceAll(input, "-", ""))
 
 	return FromBytes(inputBytes)
 }
@@ -23,6 +35,26 @@ func (u *UUID) ToBytes() []byte {
 	return u[:]
 }
 
-func (u *UUID) ToString() string {
-	return string(u.ToBytes())
+func (u *UUID) String() string {
+	return fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:16])
+}
+
+func (u *UUID) Scan(src interface{}) error {
+	switch src.(type) {
+	case string:
+		*u = FromString(src.(string))
+		return nil
+	case []byte:
+		*u = FromBytes(src.([]byte))
+		return nil
+	case UUID:
+		*u = src.(UUID)
+		return nil
+	default:
+		return errors.New("invalid type")
+	}
+}
+
+func (u UUID) Value() (driver.Value, error) {
+	return u.String(), nil
 }
