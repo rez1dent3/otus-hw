@@ -3,7 +3,7 @@ create table events
     id          uuid        not null
         constraint id
             primary key,
-    title       varchar(30) not null,
+    title       varchar(80) not null,
     description text,
     start_at    timestamptz not null,
     end_at      timestamptz not null,
