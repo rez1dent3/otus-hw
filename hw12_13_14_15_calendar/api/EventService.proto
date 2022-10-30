@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "./;event";
+option go_package = "./;internalgrpc";
 
 service Calendar {
   rpc CreateEventV1(EventV1) returns (google.protobuf.Empty);

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -14,6 +15,14 @@ type MemStorage struct {
 
 func NewMemStorage() *MemStorage {
 	return &MemStorage{events: make(map[uuid.UUID]Event)}
+}
+
+func (s *MemStorage) Connect(_ context.Context) error {
+	return nil
+}
+
+func (s *MemStorage) Close() error {
+	return nil
 }
 
 func (s *MemStorage) CreateEvent(event Event) bool {
