@@ -1,10 +1,10 @@
+//go:generate protoc -I ../../../api/ --go_out=. --go-grpc_out=. ../../../api/EventService.proto
 package internalgrpc
 
 import (
 	"context"
 	"net"
 
-	event "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/api/stubs"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 	"google.golang.org/grpc"
@@ -19,7 +19,7 @@ type Server struct {
 
 	server *grpc.Server
 
-	event.UnsafeCalendarServer
+	UnsafeCalendarServer
 }
 
 func NewServer(logger *logger.Logger, app app.Application, host string, port string) *Server {
@@ -42,7 +42,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}
 
 	s.server = grpc.NewServer()
-	event.RegisterCalendarServer(s.server, s)
+	RegisterCalendarServer(s.server, s)
 
 	return s.server.Serve(listener)
 }
@@ -52,32 +52,32 @@ func (s *Server) Stop(_ context.Context) error {
 	return nil
 }
 
-func (s *Server) CreateEventV1(ctx context.Context, v1 *event.EventV1) (*emptypb.Empty, error) {
+func (s *Server) CreateEventV1(context.Context, *EventV1) (*emptypb.Empty, error) {
 	//s.app.CreateEvent(ctx, ...)
 	panic("implement me")
 }
 
-func (s *Server) UpdateEventV1(ctx context.Context, v1 *event.EventV1) (*emptypb.Empty, error) {
+func (s *Server) UpdateEventV1(context.Context, *EventV1) (*emptypb.Empty, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Server) DeleteEventV1(ctx context.Context, v1 *event.EventIdV1) (*emptypb.Empty, error) {
+func (s *Server) DeleteEventV1(context.Context, *EventIdV1) (*emptypb.Empty, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Server) ListEventDayV1(ctx context.Context, timestamp *timestamppb.Timestamp) (*event.EventResponseV1, error) {
+func (s *Server) ListEventsDayV1(context.Context, *timestamppb.Timestamp) (*EventResponseV1, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Server) ListEventWeekV1(ctx context.Context, timestamp *timestamppb.Timestamp) (*event.EventResponseV1, error) {
+func (s *Server) ListEventsWeekV1(context.Context, *timestamppb.Timestamp) (*EventResponseV1, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *Server) ListEventMonthV1(ctx context.Context, timestamp *timestamppb.Timestamp) (*event.EventResponseV1, error) {
+func (s *Server) ListEventsMonthV1(context.Context, *timestamppb.Timestamp) (*EventResponseV1, error) {
 	//TODO implement me
 	panic("implement me")
 }

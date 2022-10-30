@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   postgres:
-    image: bitnami/postgresql:14.5.0-debian-11-r25
+    image: postgres:14.5
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U calendar_user"]
+      test: ["CMD-SHELL", "pg_isready -d calendar -U calendar_user"]
       timeout: 5s
       interval: 15s
       start_period: 1s
@@ -15,9 +15,9 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      - POSTGRESQL_DATABASE=calendar
-      - POSTGRESQL_USERNAME=calendar_user
-      - POSTGRESQL_PASSWORD=calendar_pass
+      - POSTGRES_DB=calendar
+      - POSTGRES_USER=calendar_user
+      - POSTGRES_PASSWORD=calendar_pass
     volumes:
       - ../migrations:/docker-entrypoint-initdb.d
     networks:
@@ -53,7 +53,7 @@ services:
       mode: global
       replicas: 1
     healthcheck:
-      test: "curl --connect-timeout 1 --silent --show-error --fail http://127.0.0.1/health"
+      test: "curl --connect-timeout 1 --silent --show-error --fail http://127.0.0.1:82/health"
       timeout: 5s
       interval: 25s
       start_period: 1s
@@ -73,7 +73,8 @@ services:
         condition: service_healthy
     ports:
       - "15672:15672" # rabbitmq
-      - "80:80" # calendar
+      - "80:80" # calendar http
+      - "81:81" # calendar grpc
     deploy:
       mode: replicated
       replicas: 1
