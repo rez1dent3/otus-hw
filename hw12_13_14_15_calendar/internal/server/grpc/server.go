@@ -41,7 +41,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	s.server = grpc.NewServer()
+	s.server = grpc.NewServer(grpc.UnaryInterceptor(s.RequestInterceptor))
 	RegisterCalendarServer(s.server, s)
 
 	return s.server.Serve(listener)
