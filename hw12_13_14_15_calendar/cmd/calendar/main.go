@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	_ "github.com/lib/pq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	internalgrpc "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 var configFile string
@@ -97,15 +97,4 @@ func main() {
 	}()
 
 	<-ctx.Done()
-
-	ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-
-	if err := serverGrpc.Stop(ctx); err != nil {
-		logg.Error("failed to stop grpc server: " + err.Error())
-	}
-
-	if err := serverHttp.Stop(ctx); err != nil {
-		logg.Error("failed to stop http server: " + err.Error())
-	}
 }
