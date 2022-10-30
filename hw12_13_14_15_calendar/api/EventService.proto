@@ -10,9 +10,9 @@ service Calendar {
   rpc UpdateEventV1(EventV1) returns (google.protobuf.Empty);
   rpc DeleteEventV1(EventIdV1) returns (google.protobuf.Empty);
 
-  rpc ListEventsDayV1(google.protobuf.Timestamp) returns (EventResponseV1);
-  rpc ListEventsWeekV1(google.protobuf.Timestamp) returns (EventResponseV1);
-  rpc ListEventsMonthV1(google.protobuf.Timestamp) returns (EventResponseV1);
+  rpc ListEventsDayV1(EventListRequestV1) returns (EventResponseV1);
+  rpc ListEventsWeekV1(EventListRequestV1) returns (EventResponseV1);
+  rpc ListEventsMonthV1(EventListRequestV1) returns (EventResponseV1);
 }
 
 message EventIdV1 {
@@ -27,6 +27,11 @@ message EventV1 {
   google.protobuf.Timestamp end_at = 5;
   string user_id = 6;
   optional uint32 remind_for = 7;
+}
+
+message EventListRequestV1 {
+  string user_id = 1;
+  google.protobuf.Timestamp date = 2;
 }
 
 message EventResponseV1 {

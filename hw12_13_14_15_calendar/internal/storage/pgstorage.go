@@ -32,7 +32,7 @@ func (s *PgStorage) Close() error {
 	return s.db.Close()
 }
 
-func (s *PgStorage) CreateEvent(event Event) bool {
+func (s *PgStorage) CreateEvent(ctx context.Context, event Event) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -55,7 +55,7 @@ func (s *PgStorage) CreateEvent(event Event) bool {
 	return affected > 0
 }
 
-func (s *PgStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
+func (s *PgStorage) UpdateEvent(ctx context.Context, eventID uuid.UUID, event Event) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -92,7 +92,7 @@ func (s *PgStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
 	return affected > 0
 }
 
-func (s *PgStorage) DeleteEvent(eventID uuid.UUID) bool {
+func (s *PgStorage) DeleteEvent(ctx context.Context, eventID uuid.UUID) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -109,7 +109,7 @@ func (s *PgStorage) DeleteEvent(eventID uuid.UUID) bool {
 	return affected > 0
 }
 
-func (s *PgStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *PgStorage) ListEventsDay(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -143,7 +143,7 @@ func (s *PgStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUI
 	return result
 }
 
-func (s *PgStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *PgStorage) ListEventsWeek(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -177,7 +177,7 @@ func (s *PgStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UU
 	return result
 }
 
-func (s *PgStorage) ListEventsMonth(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *PgStorage) ListEventsMonth(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 

@@ -25,7 +25,7 @@ func (s *MemStorage) Close() error {
 	return nil
 }
 
-func (s *MemStorage) CreateEvent(event Event) bool {
+func (s *MemStorage) CreateEvent(_ context.Context, event Event) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -38,7 +38,7 @@ func (s *MemStorage) CreateEvent(event Event) bool {
 	return true
 }
 
-func (s *MemStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
+func (s *MemStorage) UpdateEvent(_ context.Context, eventID uuid.UUID, event Event) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (s *MemStorage) UpdateEvent(eventID uuid.UUID, event Event) bool {
 	return true
 }
 
-func (s *MemStorage) DeleteEvent(eventID uuid.UUID) bool {
+func (s *MemStorage) DeleteEvent(_ context.Context, eventID uuid.UUID) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -64,7 +64,7 @@ func (s *MemStorage) DeleteEvent(eventID uuid.UUID) bool {
 	return true
 }
 
-func (s *MemStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *MemStorage) ListEventsDay(_ context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -81,7 +81,7 @@ func (s *MemStorage) ListEventsDay(userID uuid.UUID, date time.Time) map[uuid.UU
 	)
 }
 
-func (s *MemStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *MemStorage) ListEventsWeek(_ context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -105,7 +105,7 @@ func (s *MemStorage) ListEventsWeek(userID uuid.UUID, date time.Time) map[uuid.U
 	)
 }
 
-func (s *MemStorage) ListEventsMonth(userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+func (s *MemStorage) ListEventsMonth(_ context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
