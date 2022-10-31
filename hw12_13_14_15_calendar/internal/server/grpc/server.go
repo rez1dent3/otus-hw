@@ -106,10 +106,10 @@ func (s *Server) ListEventsMonthV1(ctx context.Context, req *EventListRequestV1)
 }
 
 func (s *Server) listResponse(events []storage.Event) *EventResponseV1 {
-	var items []*EventV1
-	for _, item := range events {
+	items := make([]*EventV1, len(events))
+	for i, item := range events {
 		item := item
-		items = append(items, &EventV1{
+		items[i] = &EventV1{
 			Id:          item.ID.String(),
 			Title:       item.Title,
 			Description: &item.Description,
@@ -117,7 +117,7 @@ func (s *Server) listResponse(events []storage.Event) *EventResponseV1 {
 			EndAt:       timestamppb.New(item.EndAt),
 			UserId:      item.UserID.String(),
 			RemindFor:   item.RemindFor,
-		})
+		}
 	}
 
 	return &EventResponseV1{

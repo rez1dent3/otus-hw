@@ -34,7 +34,7 @@ func (s *Server) RequestInterceptor(
 		userAgent = strings.Join(md["user-agent"], " ")
 	}
 
-	ip, _, err := net.SplitHostPort(p.Addr.String())
+	ip, _, _ := net.SplitHostPort(p.Addr.String())
 	if err != nil {
 		s.logger.Error("error split host and port: " + p.Addr.String())
 	}

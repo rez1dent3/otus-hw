@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	Logger   LoggerConf
-	Http     ServerConf
+	HTTP     ServerConf
 	Grpc     ServerConf
 	Database DBConf
 	Storage  StorageConf
