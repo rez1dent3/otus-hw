@@ -23,7 +23,7 @@ type Application interface {
 		description string,
 		startAt time.Time,
 		endAt time.Time,
-		userId string,
+		userID string,
 		remindFor uint32,
 	) error
 
@@ -34,7 +34,7 @@ type Application interface {
 		description string,
 		startAt time.Time,
 		endAt time.Time,
-		userId string,
+		userID string,
 		remindFor uint32,
 	) error
 
@@ -71,7 +71,7 @@ func (a *App) CreateEvent(
 	description string,
 	startAt time.Time,
 	endAt time.Time,
-	userId string,
+	userID string,
 	remindFor uint32,
 ) error {
 	result := a.storage.CreateEvent(ctx, storage.Event{
@@ -80,7 +80,7 @@ func (a *App) CreateEvent(
 		Description: description,
 		StartAt:     startAt,
 		EndAt:       endAt,
-		UserID:      uuid.FromString(userId),
+		UserID:      uuid.FromString(userID),
 		RemindFor:   &remindFor,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -100,7 +100,7 @@ func (a *App) UpdateEvent(
 	description string,
 	startAt time.Time,
 	endAt time.Time,
-	userId string,
+	userID string,
 	remindFor uint32,
 ) error {
 	result := a.storage.UpdateEvent(ctx, uuid.FromString(id), storage.Event{
@@ -108,7 +108,7 @@ func (a *App) UpdateEvent(
 		Description: description,
 		StartAt:     startAt,
 		EndAt:       endAt,
-		UserID:      uuid.FromString(userId),
+		UserID:      uuid.FromString(userID),
 		RemindFor:   &remindFor,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -128,22 +128,24 @@ func (a *App) DeleteEvent(
 	return a.storage.DeleteEvent(ctx, uuid.FromString(id))
 }
 
-func (a *App) ListEventsDay(ctx context.Context, userId string, date time.Time) []storage.Event {
-	return a.listResponse(a.storage.ListEventsDay(ctx, uuid.FromString(userId), date))
+func (a *App) ListEventsDay(ctx context.Context, userID string, date time.Time) []storage.Event {
+	return a.listResponse(a.storage.ListEventsDay(ctx, uuid.FromString(userID), date))
 }
 
-func (a *App) ListEventsWeek(ctx context.Context, userId string, date time.Time) []storage.Event {
-	return a.listResponse(a.storage.ListEventsWeek(ctx, uuid.FromString(userId), date))
+func (a *App) ListEventsWeek(ctx context.Context, userID string, date time.Time) []storage.Event {
+	return a.listResponse(a.storage.ListEventsWeek(ctx, uuid.FromString(userID), date))
 }
 
-func (a *App) ListEventsMonth(ctx context.Context, userId string, date time.Time) []storage.Event {
-	return a.listResponse(a.storage.ListEventsMonth(ctx, uuid.FromString(userId), date))
+func (a *App) ListEventsMonth(ctx context.Context, userID string, date time.Time) []storage.Event {
+	return a.listResponse(a.storage.ListEventsMonth(ctx, uuid.FromString(userID), date))
 }
 
 func (a *App) listResponse(events map[uuid.UUID]storage.Event) []storage.Event {
-	var result []storage.Event
+	i := 0
+	result := make([]storage.Event, len(events))
 	for _, item := range events {
-		result = append(result, item)
+		result[i] = item
+		i++
 	}
 
 	return result

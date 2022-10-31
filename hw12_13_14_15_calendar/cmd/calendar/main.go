@@ -74,7 +74,7 @@ func main() {
 	calendar := app.New(logg, repo)
 
 	serverGrpc := internalgrpc.NewServer(logg, calendar, config.Grpc.Host, config.Grpc.Port)
-	serverHttp := internalhttp.NewServer(logg, calendar, config.Http.Host, config.Http.Port)
+	serverHTTP := internalhttp.NewServer(logg, calendar, config.HTTP.Host, config.HTTP.Port)
 
 	logg.Info("calendar is running...")
 
@@ -83,16 +83,16 @@ func main() {
 		if err := serverGrpc.Start(ctx); err != nil {
 			logg.Error("failed to start grpc server: " + err.Error())
 			cancel()
-			os.Exit(1) //nolint:gocritic
+			os.Exit(1)
 		}
 	}()
 
 	go func() {
 		logg.Info("http is running...")
-		if err := serverHttp.Start(ctx); err != nil {
+		if err := serverHTTP.Start(ctx); err != nil {
 			logg.Error("failed to start http server: " + err.Error())
 			cancel()
-			os.Exit(1) //nolint:gocritic
+			os.Exit(1)
 		}
 	}()
 

@@ -32,8 +32,8 @@ func (s *PgStorage) Close() error {
 	return s.db.Close()
 }
 
-func (s *PgStorage) CreateEvent(ctx context.Context, event Event) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) bool {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	rows, err := s.db.NamedExecContext(
@@ -55,8 +55,8 @@ func (s *PgStorage) CreateEvent(ctx context.Context, event Event) bool {
 	return affected > 0
 }
 
-func (s *PgStorage) UpdateEvent(ctx context.Context, eventID uuid.UUID, event Event) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) UpdateEvent(parentCtx context.Context, eventID uuid.UUID, event Event) bool {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	rows, err := s.db.ExecContext(
@@ -92,8 +92,8 @@ func (s *PgStorage) UpdateEvent(ctx context.Context, eventID uuid.UUID, event Ev
 	return affected > 0
 }
 
-func (s *PgStorage) DeleteEvent(ctx context.Context, eventID uuid.UUID) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) DeleteEvent(parentCtx context.Context, eventID uuid.UUID) bool {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	execContext, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE id=$1`, eventID)
@@ -109,8 +109,8 @@ func (s *PgStorage) DeleteEvent(ctx context.Context, eventID uuid.UUID) bool {
 	return affected > 0
 }
 
-func (s *PgStorage) ListEventsDay(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) ListEventsDay(parentCtx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	rows, err := s.db.QueryxContext(
@@ -143,8 +143,8 @@ func (s *PgStorage) ListEventsDay(ctx context.Context, userID uuid.UUID, date ti
 	return result
 }
 
-func (s *PgStorage) ListEventsWeek(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) ListEventsWeek(parentCtx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	rows, err := s.db.QueryxContext(
@@ -177,8 +177,8 @@ func (s *PgStorage) ListEventsWeek(ctx context.Context, userID uuid.UUID, date t
 	return result
 }
 
-func (s *PgStorage) ListEventsMonth(ctx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+func (s *PgStorage) ListEventsMonth(parentCtx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	rows, err := s.db.QueryxContext(

@@ -130,7 +130,9 @@ func TestMemStorage_List(t *testing.T) {
 		userID := uuid.Gen()
 
 		for _, input := range inputs {
-			storage.CreateEvent(context.Background(), storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(
+				context.Background(),
+				storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsDay(context.Background(), userID, now.AddDate(0, 0, -1)), 1)
@@ -153,7 +155,9 @@ func TestMemStorage_List(t *testing.T) {
 		userID := uuid.Gen()
 
 		for _, input := range inputs {
-			storage.CreateEvent(context.Background(), storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(
+				context.Background(),
+				storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsWeek(context.Background(), userID, now.AddDate(0, 0, -7)), 1)
@@ -176,7 +180,9 @@ func TestMemStorage_List(t *testing.T) {
 		userID := uuid.Gen()
 
 		for _, input := range inputs {
-			storage.CreateEvent(context.Background(), storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
+			storage.CreateEvent(
+				context.Background(),
+				storage2.Event{ID: input.uuid, UserID: userID, StartAt: input.date, EndAt: input.date})
 		}
 
 		require.Len(t, storage.ListEventsMonth(context.Background(), userID, now.AddDate(0, 1, 0)), 1)
