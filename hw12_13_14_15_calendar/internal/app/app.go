@@ -103,7 +103,9 @@ func (a *App) UpdateEvent(
 	userID string,
 	remindFor uint32,
 ) error {
-	result := a.storage.UpdateEvent(ctx, uuid.FromString(id), storage.Event{
+	idObj := uuid.FromString(id)
+	result := a.storage.UpdateEvent(ctx, idObj, storage.Event{
+		ID:          idObj,
 		Title:       title,
 		Description: description,
 		StartAt:     startAt,
