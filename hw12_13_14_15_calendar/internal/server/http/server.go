@@ -23,8 +23,14 @@ func NewServer(logger *logger.Logger, app app.Application, host string, port str
 }
 
 func (s *Server) Start(ctx context.Context) error {
+	stack := actions.NewEventEnt(s.app, s.logger)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", actions.Ping)
+	mux.HandleFunc("/events", stack.HandleFunc)
+
+	loggerMiddleware := NewLoggerMiddleware(s.logger)
+	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux), ReadHeaderTimeout: time.Second}
 
 	go func() {
 		<-ctx.Done()
@@ -34,9 +40,6 @@ func (s *Server) Start(ctx context.Context) error {
 			return
 		}
 	}()
-
-	loggerMiddleware := NewLoggerMiddleware(s.logger)
-	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux), ReadHeaderTimeout: time.Second}
 
 	return s.server.ListenAndServe()
 }
