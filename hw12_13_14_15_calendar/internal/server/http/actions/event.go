@@ -127,10 +127,10 @@ func (e *EventEnt) error(w http.ResponseWriter, err error) {
 
 func (e *EventEnt) list(events []storage.Event) []responses.EventResponse {
 	result := make([]responses.EventResponse, len(events))
-	for key, item := range events {
-		key := key
+	i := 0
+	for _, item := range events {
 		item := item
-		result[key] = responses.EventResponse{
+		result[i] = responses.EventResponse{
 			ID:          item.ID.String(),
 			Title:       item.Title,
 			Description: &item.Description,
@@ -139,6 +139,7 @@ func (e *EventEnt) list(events []storage.Event) []responses.EventResponse {
 			UserID:      item.UserID.String(),
 			RemindFor:   item.RemindFor,
 		}
+		i++
 	}
 	return result
 }
