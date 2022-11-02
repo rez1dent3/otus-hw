@@ -16,7 +16,7 @@ import (
 
 type nullWriter struct{}
 
-func (w nullWriter) Write(p []byte) (n int, err error) {
+func (w nullWriter) Write(_ []byte) (n int, err error) {
 	return 0, nil
 }
 

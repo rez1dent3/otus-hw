@@ -22,12 +22,18 @@ func NewServer(logger *logger.Logger, app app.Application, host string, port str
 	return &Server{logger: logger, app: app, addr: host + ":" + port}
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *Server) HTTPHandler() http.Handler {
 	stack := actions.NewEventEnt(s.app, s.logger)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", actions.Ping)
 	mux.HandleFunc("/events", stack.HandleFunc)
+
+	return mux
+}
+
+func (s *Server) Start(ctx context.Context) error {
+	mux := s.HTTPHandler()
 
 	loggerMiddleware := NewLoggerMiddleware(s.logger)
 	s.server = &http.Server{Addr: s.addr, Handler: loggerMiddleware.Handle(mux), ReadHeaderTimeout: time.Second}
