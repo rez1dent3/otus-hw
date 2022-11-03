@@ -43,6 +43,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 		err := s.Stop(ctx)
 		if err != nil {
+			s.logger.Error(err.Error())
 			return
 		}
 	}()
