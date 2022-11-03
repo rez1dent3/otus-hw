@@ -47,20 +47,10 @@ type Application interface {
 
 type App struct {
 	logger  *logger.Logger
-	storage Storage
+	storage storage.Storage
 }
 
-type Storage interface {
-	CreateEvent(context.Context, storage.Event) bool
-	UpdateEvent(context.Context, uuid.UUID, storage.Event) bool
-	DeleteEvent(context.Context, uuid.UUID) bool
-
-	ListEventsDay(context.Context, uuid.UUID, time.Time) map[uuid.UUID]storage.Event
-	ListEventsWeek(context.Context, uuid.UUID, time.Time) map[uuid.UUID]storage.Event
-	ListEventsMonth(context.Context, uuid.UUID, time.Time) map[uuid.UUID]storage.Event
-}
-
-func New(logger *logger.Logger, storage Storage) *App {
+func New(logger *logger.Logger, storage storage.Storage) *App {
 	return &App{logger: logger, storage: storage}
 }
 

@@ -53,23 +53,17 @@ func main() {
 	logg := logger.New(config.Logger.Level, os.Stdout)
 	logg.Debug("db driver: " + config.Storage.Driver)
 
-	selStorage, err := storage.NewConnect(ctx, config.Storage.Driver, config.Database.Dsn)
+	repo, err := storage.NewConnect(ctx, config.Storage.Driver, config.Database.Dsn)
 	if err != nil {
 		logg.Error(err.Error())
 		return
 	}
 
 	defer func() {
-		if err := selStorage.Close(); err != nil {
+		if err := repo.Close(); err != nil {
 			logg.Error(err.Error())
 		}
 	}()
-
-	repo, ok := selStorage.(app.Storage)
-	if !ok {
-		logg.Error("an invalid object was received")
-		return
-	}
 
 	calendar := app.New(logg, repo)
 
