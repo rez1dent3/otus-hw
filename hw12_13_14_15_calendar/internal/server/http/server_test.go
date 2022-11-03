@@ -60,14 +60,14 @@ func TestServer_CreateEvent(t *testing.T) {
 		server := httptest.NewServer(createServer().HTTPHandler())
 		defer server.Close()
 
-		eventId := uuid.Gen()
-		userId := uuid.Gen()
+		eventID := uuid.Gen()
+		userID := uuid.Gen()
 
 		createEvent := requests.EventRequest{
-			ID:      eventId.String(),
+			ID:      eventID.String(),
 			StartAt: time.Now(),
 			EndAt:   time.Now(),
-			UserID:  userId.String(),
+			UserID:  userID.String(),
 		}
 
 		body, err := json.Marshal(createEvent)
@@ -92,14 +92,14 @@ func TestServer_CreateEvent(t *testing.T) {
 		server := httptest.NewServer(createServer().HTTPHandler())
 		defer server.Close()
 
-		eventId := uuid.Gen()
-		userId := uuid.Gen()
+		eventID := uuid.Gen()
+		userID := uuid.Gen()
 
 		createEvent := requests.EventRequest{
-			ID:      eventId.String(),
+			ID:      eventID.String(),
 			StartAt: time.Now(),
 			EndAt:   time.Now(),
-			UserID:  userId.String(),
+			UserID:  userID.String(),
 		}
 
 		body, err := json.Marshal(createEvent)
