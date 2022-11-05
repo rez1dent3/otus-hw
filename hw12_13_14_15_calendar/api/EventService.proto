@@ -1,14 +1,13 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
 option go_package = "./;internalgrpc";
 
 service Calendar {
-  rpc CreateEventV1(EventV1) returns (google.protobuf.Empty);
-  rpc UpdateEventV1(EventV1) returns (google.protobuf.Empty);
-  rpc DeleteEventV1(EventIdV1) returns (google.protobuf.Empty);
+  rpc CreateEventV1(EventV1) returns (ResponseStatusV1);
+  rpc UpdateEventV1(EventV1) returns (ResponseStatusV1);
+  rpc DeleteEventV1(EventIdV1) returns (ResponseStatusV1);
 
   rpc ListEventsDayV1(EventListRequestV1) returns (EventResponseV1);
   rpc ListEventsWeekV1(EventListRequestV1) returns (EventResponseV1);
@@ -36,4 +35,14 @@ message EventListRequestV1 {
 
 message EventResponseV1 {
   repeated EventV1 items = 1;
+}
+
+message ResponseStatusV1 {
+  enum Status {
+    SUCCESS = 0;
+    FAILED = 1;
+  }
+
+  Status code = 1;
+  string message = 2;
 }

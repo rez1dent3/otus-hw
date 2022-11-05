@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -32,7 +33,7 @@ func (s *PgStorage) Close() error {
 	return s.db.Close()
 }
 
-func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) bool {
+func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) (bool, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
@@ -44,18 +45,26 @@ func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) bool {
     			(:id, :title, :description, :start_at, :end_at, :user_id, NOW(), NOW());`,
 		event)
 	if err != nil {
-		return false
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return false, ErrUnableDuplicate
+		}
+
+		return false, err
 	}
 
 	affected, err := rows.RowsAffected()
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return affected > 0
+	if affected > 0 {
+		return true, nil
+	}
+
+	return false, ErrNotFound
 }
 
-func (s *PgStorage) UpdateEvent(parentCtx context.Context, eventID uuid.UUID, event Event) bool {
+func (s *PgStorage) UpdateEvent(parentCtx context.Context, eventID uuid.UUID, event Event) (bool, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
@@ -81,32 +90,40 @@ func (s *PgStorage) UpdateEvent(parentCtx context.Context, eventID uuid.UUID, ev
 		eventID,
 	)
 	if err != nil {
-		return false
+		return false, err
 	}
 
 	affected, err := rows.RowsAffected()
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return affected > 0
+	if affected > 0 {
+		return true, nil
+	}
+
+	return false, ErrNotFound
 }
 
-func (s *PgStorage) DeleteEvent(parentCtx context.Context, eventID uuid.UUID) bool {
+func (s *PgStorage) DeleteEvent(parentCtx context.Context, eventID uuid.UUID) (bool, error) {
 	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
 	execContext, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE id=$1`, eventID)
 	if err != nil {
-		return false
+		return false, err
 	}
 
 	affected, err := execContext.RowsAffected()
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return affected > 0
+	if affected > 0 {
+		return true, nil
+	}
+
+	return false, ErrNotFound
 }
 
 func (s *PgStorage) ListEventsDay(parentCtx context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {

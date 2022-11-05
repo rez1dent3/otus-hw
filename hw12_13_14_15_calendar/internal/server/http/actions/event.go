@@ -87,7 +87,10 @@ func (e *EventEnt) updateEvent(writer http.ResponseWriter, req *http.Request) {
 
 // deleteEvent DELETE /events?id=:id.
 func (e *EventEnt) deleteEvent(writer http.ResponseWriter, req *http.Request) {
-	e.app.DeleteEvent(req.Context(), req.URL.Query().Get("id"))
+	if err := e.app.DeleteEvent(req.Context(), req.URL.Query().Get("id")); err != nil {
+		e.error(writer, err)
+		return
+	}
 	writer.WriteHeader(http.StatusNoContent)
 }
 
