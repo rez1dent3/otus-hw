@@ -128,7 +128,7 @@ func TestServer_CreateEvent(t *testing.T) {
 		}()
 
 		body, err = io.ReadAll(res.Body)
-		require.Equal(t, "{\"message\":\"create event error\"}\n", string(body))
+		require.Equal(t, "{\"message\":\"unable to duplicate\"}\n", string(body))
 	})
 
 	t.Run("DeleteEvent", func(t *testing.T) {

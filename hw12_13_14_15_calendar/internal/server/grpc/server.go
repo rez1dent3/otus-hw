@@ -9,7 +9,6 @@ import (
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -53,7 +52,7 @@ func (s *Server) Stop(_ context.Context) error {
 	return nil
 }
 
-func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*emptypb.Empty, error) {
+func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*ResponseStatusV1, error) {
 	if err := s.app.CreateEvent(
 		ctx,
 		event.GetId(),
@@ -64,13 +63,19 @@ func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*emptypb.Em
 		event.GetUserId(),
 		event.GetRemindFor(),
 	); err != nil {
-		return &emptypb.Empty{}, err
+		return &ResponseStatusV1{
+			Code:    ResponseStatusV1_FAILED,
+			Message: err.Error(),
+		}, nil
 	}
 
-	return &emptypb.Empty{}, nil
+	return &ResponseStatusV1{
+		Code:    ResponseStatusV1_SUCCESS,
+		Message: "",
+	}, nil
 }
 
-func (s *Server) UpdateEventV1(ctx context.Context, event *EventV1) (*emptypb.Empty, error) {
+func (s *Server) UpdateEventV1(ctx context.Context, event *EventV1) (*ResponseStatusV1, error) {
 	if err := s.app.UpdateEvent(
 		ctx,
 		event.GetId(),
@@ -81,16 +86,30 @@ func (s *Server) UpdateEventV1(ctx context.Context, event *EventV1) (*emptypb.Em
 		event.GetUserId(),
 		event.GetRemindFor(),
 	); err != nil {
-		return &emptypb.Empty{}, err
+		return &ResponseStatusV1{
+			Code:    ResponseStatusV1_FAILED,
+			Message: err.Error(),
+		}, nil
 	}
 
-	return &emptypb.Empty{}, nil
+	return &ResponseStatusV1{
+		Code:    ResponseStatusV1_SUCCESS,
+		Message: "",
+	}, nil
 }
 
-func (s *Server) DeleteEventV1(ctx context.Context, event *EventIdV1) (*emptypb.Empty, error) {
-	s.app.DeleteEvent(ctx, event.GetId())
+func (s *Server) DeleteEventV1(ctx context.Context, event *EventIdV1) (*ResponseStatusV1, error) {
+	if err := s.app.DeleteEvent(ctx, event.GetId()); err != nil {
+		return &ResponseStatusV1{
+			Code:    ResponseStatusV1_FAILED,
+			Message: err.Error(),
+		}, nil
+	}
 
-	return &emptypb.Empty{}, nil
+	return &ResponseStatusV1{
+		Code:    ResponseStatusV1_SUCCESS,
+		Message: "",
+	}, nil
 }
 
 func (s *Server) ListEventsDayV1(ctx context.Context, req *EventListRequestV1) (*EventResponseV1, error) {

@@ -25,43 +25,43 @@ func (s *MemStorage) Close() error {
 	return nil
 }
 
-func (s *MemStorage) CreateEvent(_ context.Context, event Event) bool {
+func (s *MemStorage) CreateEvent(_ context.Context, event Event) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.events[event.ID]; ok {
-		return false
+		return false, ErrUnableDuplicate
 	}
 
 	s.events[event.ID] = event
 
-	return true
+	return true, nil
 }
 
-func (s *MemStorage) UpdateEvent(_ context.Context, eventID uuid.UUID, event Event) bool {
+func (s *MemStorage) UpdateEvent(_ context.Context, eventID uuid.UUID, event Event) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.events[eventID]; !ok {
-		return false
+		return false, ErrNotFound
 	}
 
 	s.events[eventID] = event
 
-	return true
+	return true, nil
 }
 
-func (s *MemStorage) DeleteEvent(_ context.Context, eventID uuid.UUID) bool {
+func (s *MemStorage) DeleteEvent(_ context.Context, eventID uuid.UUID) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.events[eventID]; !ok {
-		return false
+		return false, ErrNotFound
 	}
 
 	delete(s.events, eventID)
 
-	return true
+	return true, nil
 }
 
 func (s *MemStorage) ListEventsDay(_ context.Context, userID uuid.UUID, date time.Time) map[uuid.UUID]Event {

@@ -38,7 +38,7 @@ type Application interface {
 		remindFor uint32,
 	) error
 
-	DeleteEvent(ctx context.Context, id string) bool
+	DeleteEvent(ctx context.Context, id string) error
 
 	ListEventsDay(context.Context, string, time.Time) []storage.Event
 	ListEventsWeek(context.Context, string, time.Time) []storage.Event
@@ -64,7 +64,7 @@ func (a *App) CreateEvent(
 	userID string,
 	remindFor uint32,
 ) error {
-	result := a.storage.CreateEvent(ctx, storage.Event{
+	if result, err := a.storage.CreateEvent(ctx, storage.Event{
 		ID:          uuid.FromString(id),
 		Title:       title,
 		Description: description,
@@ -74,13 +74,13 @@ func (a *App) CreateEvent(
 		RemindFor:   &remindFor,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
-	})
-
-	if !result {
+	}); err != nil {
+		return err
+	} else if !result {
 		return ErrCreateEvent
+	} else {
+		return nil
 	}
-
-	return nil
 }
 
 func (a *App) UpdateEvent(
@@ -94,7 +94,7 @@ func (a *App) UpdateEvent(
 	remindFor uint32,
 ) error {
 	idObj := uuid.FromString(id)
-	result := a.storage.UpdateEvent(ctx, idObj, storage.Event{
+	if result, err := a.storage.UpdateEvent(ctx, idObj, storage.Event{
 		ID:          idObj,
 		Title:       title,
 		Description: description,
@@ -104,20 +104,26 @@ func (a *App) UpdateEvent(
 		RemindFor:   &remindFor,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
-	})
-
-	if !result {
+	}); err != nil {
+		return err
+	} else if !result {
 		return ErrUpdateEvent
+	} else {
+		return nil
 	}
-
-	return nil
 }
 
 func (a *App) DeleteEvent(
 	ctx context.Context,
 	id string,
-) bool {
-	return a.storage.DeleteEvent(ctx, uuid.FromString(id))
+) error {
+	if result, err := a.storage.DeleteEvent(ctx, uuid.FromString(id)); err != nil {
+		return err
+	} else if !result {
+		return ErrUpdateEvent
+	} else {
+		return nil
+	}
 }
 
 func (a *App) ListEventsDay(ctx context.Context, userID string, date time.Time) []storage.Event {

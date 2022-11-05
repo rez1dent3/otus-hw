@@ -24,7 +24,8 @@ func TestPgStorage_Create(t *testing.T) {
 		event := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 
 		require.Len(t, storage.ListEventsMonth(context.Background(), event.UserID, event.StartAt), 0)
-		success := storage.CreateEvent(context.Background(), event)
+		success, err := storage.CreateEvent(context.Background(), event)
+		require.NoError(t, err)
 
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event.UserID, event.StartAt), 1)
@@ -34,12 +35,14 @@ func TestPgStorage_Create(t *testing.T) {
 		event := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 
 		require.Len(t, storage.ListEventsMonth(context.Background(), event.UserID, event.StartAt), 0)
-		success := storage.CreateEvent(context.Background(), event)
+		success, err := storage.CreateEvent(context.Background(), event)
+		require.NoError(t, err)
 
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event.UserID, event.StartAt), 1)
 
-		loss := storage.CreateEvent(context.Background(), event)
+		loss, err := storage.CreateEvent(context.Background(), event)
+		require.ErrorIs(t, err, storage2.ErrUnableDuplicate)
 		require.False(t, loss)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event.UserID, event.StartAt), 1)
 	})
@@ -54,15 +57,18 @@ func TestPgStorage_Update(t *testing.T) {
 
 	t.Run("UpdateEvent", func(t *testing.T) {
 		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
-		loss := storage.UpdateEvent(context.Background(), event1.ID, event1)
+		loss, err := storage.UpdateEvent(context.Background(), event1.ID, event1)
+		require.ErrorIs(t, err, storage2.ErrNotFound)
 		require.False(t, loss)
 
-		success := storage.CreateEvent(context.Background(), event1)
+		success, err := storage.CreateEvent(context.Background(), event1)
+		require.NoError(t, err)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event1.UserID, event1.StartAt), 1)
 
 		event2 := storage2.Event{ID: event1.ID, UserID: uuid.Gen(), Title: "hello"}
-		success = storage.UpdateEvent(context.Background(), event2.ID, event2)
+		success, err = storage.UpdateEvent(context.Background(), event2.ID, event2)
+		require.NoError(t, err)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event2.UserID, event2.StartAt), 1)
 	})
@@ -78,17 +84,20 @@ func TestPgStorage_Delete(t *testing.T) {
 	t.Run("DeleteEvent.notExists", func(t *testing.T) {
 		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
 		require.Len(t, storage.ListEventsMonth(context.Background(), event1.UserID, event1.StartAt), 0)
-		success := storage.DeleteEvent(context.Background(), event1.ID)
+		success, err := storage.DeleteEvent(context.Background(), event1.ID)
+		require.ErrorIs(t, err, storage2.ErrNotFound)
 		require.False(t, success)
 	})
 
 	t.Run("DeleteEvent.exists", func(t *testing.T) {
 		event1 := storage2.Event{ID: uuid.Gen(), UserID: uuid.Gen()}
-		success := storage.CreateEvent(context.Background(), event1)
+		success, err := storage.CreateEvent(context.Background(), event1)
+		require.NoError(t, err)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event1.UserID, event1.StartAt), 1)
 
-		success = storage.DeleteEvent(context.Background(), event1.ID)
+		success, err = storage.DeleteEvent(context.Background(), event1.ID)
+		require.NoError(t, err)
 		require.True(t, success)
 		require.Len(t, storage.ListEventsMonth(context.Background(), event1.UserID, event1.StartAt), 0)
 	})

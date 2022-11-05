@@ -49,29 +49,33 @@ func TestServer_CreateEventV1(t *testing.T) {
 	t.Run("CreateEventV1", func(t *testing.T) {
 		server := createServer()
 		event := newEvent()
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		resp, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667323499, 10)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
-		require.Equal(t, event.Id, resp.Items[0].Id)
-		require.Equal(t, event.UserId, resp.Items[0].UserId)
+		require.Len(t, respList.Items, 1)
+		require.Equal(t, event.Id, respList.Items[0].Id)
+		require.Equal(t, event.UserId, respList.Items[0].UserId)
 	})
 
 	t.Run("CreateEventV1.ErrDuplicate", func(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		_, err = server.CreateEventV1(context.Background(), event)
-		require.ErrorIs(t, app.ErrCreateEvent, err)
+		resp, err = server.CreateEventV1(context.Background(), event)
+		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_FAILED)
+		require.Equal(t, resp.Message, storage.ErrUnableDuplicate.Error())
 	})
 }
 
@@ -82,16 +86,19 @@ func TestServer_DeleteEventV1(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		_, err = server.DeleteEventV1(context.Background(), &internalgrpc.EventIdV1{
+		resp, err = server.DeleteEventV1(context.Background(), &internalgrpc.EventIdV1{
 			Id: event.Id,
 		})
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		_, err = server.CreateEventV1(context.Background(), event)
+		resp, err = server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 	})
 }
 
@@ -102,27 +109,29 @@ func TestServer_UpdateEventV1(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
 		userID := uuid.Gen()
 
 		{
 			event := event
 			event.UserId = userID.String()
-			_, err = server.UpdateEventV1(context.Background(), event)
+			resp, err := server.UpdateEventV1(context.Background(), event)
 			require.NoError(t, err)
+			require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 		}
 
-		resp, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: userID.String(),
 			Date:   timestamppb.New(time.Unix(1667323499, 10)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
-		require.Equal(t, event.Id, resp.Items[0].Id)
-		require.Equal(t, userID.String(), resp.Items[0].UserId)
+		require.Len(t, respList.Items, 1)
+		require.Equal(t, event.Id, respList.Items[0].Id)
+		require.Equal(t, userID.String(), respList.Items[0].UserId)
 	})
 }
 
@@ -133,87 +142,90 @@ func TestServer_ListEventsBy(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		resp, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err := server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667433600, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, respList.Items, 0)
 
-		resp, err = server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err = server.ListEventsDayV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667323499, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
+		require.Len(t, respList.Items, 1)
 	})
 
 	t.Run("ListEventsWeekV1", func(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		resp, err := server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err := server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667174399, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, respList.Items, 0)
 
-		resp, err = server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err = server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667779200, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, respList.Items, 0)
 
-		resp, err = server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err = server.ListEventsWeekV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667174400, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
+		require.Len(t, respList.Items, 1)
 	})
 
 	t.Run("ListEventsMonthV1", func(t *testing.T) {
 		server := createServer()
 		event := newEvent()
 
-		_, err := server.CreateEventV1(context.Background(), event)
+		resp, err := server.CreateEventV1(context.Background(), event)
 		require.NoError(t, err)
+		require.Equal(t, resp.Code, internalgrpc.ResponseStatusV1_SUCCESS)
 
-		resp, err := server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err := server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667260799, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, respList.Items, 0)
 
-		resp, err = server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err = server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1669852800, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, respList.Items, 0)
 
-		resp, err = server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
+		respList, err = server.ListEventsMonthV1(context.Background(), &internalgrpc.EventListRequestV1{
 			UserId: event.UserId,
 			Date:   timestamppb.New(time.Unix(1667260800, 0)),
 		})
 
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
+		require.Len(t, respList.Items, 1)
 	})
 }
