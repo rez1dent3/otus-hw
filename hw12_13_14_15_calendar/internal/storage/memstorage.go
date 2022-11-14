@@ -160,3 +160,15 @@ func (s *MemStorage) listBy(
 
 	return result
 }
+
+func (s *MemStorage) ListToSendNotifies(_ context.Context, _ time.Time) ([]Notify, error) {
+	return nil, nil
+}
+
+func (s *MemStorage) RemoveOldEvents(_ context.Context, _ time.Time) error {
+	return nil
+}
+
+func (s *MemStorage) MarkAsSent(_ context.Context, _ uuid.UUID) error {
+	return nil
+}

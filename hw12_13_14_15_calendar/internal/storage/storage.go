@@ -13,7 +13,7 @@ var (
 	ErrNotFound        = errors.New("not found")
 )
 
-type Storage interface {
+type CalendarStorage interface {
 	CreateEvent(context.Context, Event) (bool, error)
 	UpdateEvent(context.Context, uuid.UUID, Event) (bool, error)
 	DeleteEvent(context.Context, uuid.UUID) (bool, error)
@@ -25,7 +25,20 @@ type Storage interface {
 	Close() error
 }
 
-func NewConnect(ctx context.Context, driver, dsn string) (Storage, error) {
+type SchedulerStorage interface {
+	ListToSendNotifies(context.Context, time.Time) ([]Notify, error)
+	RemoveOldEvents(context.Context, time.Time) error
+	MarkAsSent(context.Context, uuid.UUID) error
+
+	Close() error
+}
+
+type internalStorage interface {
+	CalendarStorage
+	SchedulerStorage
+}
+
+func newConnect(ctx context.Context, driver, dsn string) (internalStorage, error) {
 	if driver == "postgres" {
 		pg := NewPgStorage(dsn)
 		if err := pg.Connect(ctx); err != nil {
@@ -36,4 +49,12 @@ func NewConnect(ctx context.Context, driver, dsn string) (Storage, error) {
 	}
 
 	return NewMemStorage(), nil
+}
+
+func NewCalendarStorage(ctx context.Context, driver, dsn string) (CalendarStorage, error) {
+	return newConnect(ctx, driver, dsn)
+}
+
+func NewSchedulerStorage(ctx context.Context, driver, dsn string) (SchedulerStorage, error) {
+	return newConnect(ctx, driver, dsn)
 }

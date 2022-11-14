@@ -19,7 +19,7 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.yaml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "/etc/calendar/calendar_config.yaml", "Path to configuration file")
 }
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 	logg := logger.New(config.Logger.Level, os.Stdout)
 	logg.Debug("db driver: " + config.Storage.Driver)
 
-	repo, err := storage.NewConnect(ctx, config.Storage.Driver, config.Database.Dsn)
+	repo, err := storage.NewCalendarStorage(ctx, config.Storage.Driver, config.Database.Dsn)
 	if err != nil {
 		logg.Error(err.Error())
 		return

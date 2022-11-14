@@ -24,7 +24,7 @@ type Application interface {
 		startAt time.Time,
 		endAt time.Time,
 		userID string,
-		remindFor uint32,
+		remindFor *time.Duration,
 	) error
 
 	UpdateEvent(
@@ -35,7 +35,7 @@ type Application interface {
 		startAt time.Time,
 		endAt time.Time,
 		userID string,
-		remindFor uint32,
+		remindFor *time.Duration,
 	) error
 
 	DeleteEvent(ctx context.Context, id string) error
@@ -47,10 +47,10 @@ type Application interface {
 
 type App struct {
 	logger  *logger.Logger
-	storage storage.Storage
+	storage storage.CalendarStorage
 }
 
-func New(logger *logger.Logger, storage storage.Storage) *App {
+func New(logger *logger.Logger, storage storage.CalendarStorage) *App {
 	return &App{logger: logger, storage: storage}
 }
 
@@ -62,7 +62,7 @@ func (a *App) CreateEvent(
 	startAt time.Time,
 	endAt time.Time,
 	userID string,
-	remindFor uint32,
+	remindFor *time.Duration,
 ) error {
 	if result, err := a.storage.CreateEvent(ctx, storage.Event{
 		ID:          uuid.FromString(id),
@@ -71,7 +71,7 @@ func (a *App) CreateEvent(
 		StartAt:     startAt,
 		EndAt:       endAt,
 		UserID:      uuid.FromString(userID),
-		RemindFor:   &remindFor,
+		RemindFor:   (*storage.Duration)(remindFor),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}); err != nil {
@@ -91,7 +91,7 @@ func (a *App) UpdateEvent(
 	startAt time.Time,
 	endAt time.Time,
 	userID string,
-	remindFor uint32,
+	remindFor *time.Duration,
 ) error {
 	idObj := uuid.FromString(id)
 	if result, err := a.storage.UpdateEvent(ctx, idObj, storage.Event{
@@ -101,7 +101,7 @@ func (a *App) UpdateEvent(
 		StartAt:     startAt,
 		EndAt:       endAt,
 		UserID:      uuid.FromString(userID),
-		RemindFor:   &remindFor,
+		RemindFor:   (*storage.Duration)(remindFor),
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}); err != nil {

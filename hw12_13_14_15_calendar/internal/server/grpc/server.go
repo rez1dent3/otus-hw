@@ -4,11 +4,13 @@ package internalgrpc
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/app"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -53,6 +55,7 @@ func (s *Server) Stop(_ context.Context) error {
 }
 
 func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*ResponseStatusV1, error) {
+	duration := event.GetRemindFor().AsDuration()
 	if err := s.app.CreateEvent(
 		ctx,
 		event.GetId(),
@@ -61,7 +64,7 @@ func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*ResponseSt
 		event.GetStartAt().AsTime(),
 		event.GetEndAt().AsTime(),
 		event.GetUserId(),
-		event.GetRemindFor(),
+		&duration,
 	); err != nil {
 		return &ResponseStatusV1{
 			Code:    ResponseStatusV1_FAILED,
@@ -76,6 +79,7 @@ func (s *Server) CreateEventV1(ctx context.Context, event *EventV1) (*ResponseSt
 }
 
 func (s *Server) UpdateEventV1(ctx context.Context, event *EventV1) (*ResponseStatusV1, error) {
+	duration := event.GetRemindFor().AsDuration()
 	if err := s.app.UpdateEvent(
 		ctx,
 		event.GetId(),
@@ -84,7 +88,7 @@ func (s *Server) UpdateEventV1(ctx context.Context, event *EventV1) (*ResponseSt
 		event.GetStartAt().AsTime(),
 		event.GetEndAt().AsTime(),
 		event.GetUserId(),
-		event.GetRemindFor(),
+		&duration,
 	); err != nil {
 		return &ResponseStatusV1{
 			Code:    ResponseStatusV1_FAILED,
@@ -128,6 +132,7 @@ func (s *Server) listResponse(events []storage.Event) *EventResponseV1 {
 	items := make([]*EventV1, len(events))
 	for i, item := range events {
 		item := item
+
 		items[i] = &EventV1{
 			Id:          item.ID.String(),
 			Title:       item.Title,
@@ -135,7 +140,7 @@ func (s *Server) listResponse(events []storage.Event) *EventResponseV1 {
 			StartAt:     timestamppb.New(item.StartAt),
 			EndAt:       timestamppb.New(item.EndAt),
 			UserId:      item.UserID.String(),
-			RemindFor:   item.RemindFor,
+			RemindFor:   durationpb.New((time.Duration)(*item.RemindFor)),
 		}
 	}
 
