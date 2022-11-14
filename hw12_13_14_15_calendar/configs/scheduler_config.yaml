@@ -1,0 +1,12 @@
+logger:
+  level: DEBUG
+database:
+  dsn: "host=postgres port=5432 user=calendar_user password=calendar_pass dbname=calendar sslmode=disable"
+storage:
+  driver: "postgres"
+scheduler:
+  notify: 10s
+  cleaner: 30s
+queue:
+  dsn: "amqp://rabbit_user:rabbit_pass@rabbitmq:5672/"
+  name: "calendar_queue"

@@ -1,7 +1,7 @@
 # Собираем в гошке
-FROM golang:1.16.2 as build
+FROM golang:1.19 as build
 
-ENV BIN_FILE /opt/calendar/calendar-app
+ENV BIN_FILE /bin/calendar
 ENV CODE_DIR /go/src/
 
 WORKDIR ${CODE_DIR}
@@ -27,14 +27,7 @@ FROM alpine:3.9
 RUN apk update
 RUN apk add curl
 
-LABEL ORGANIZATION="OTUS Online Education"
-LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
-
-ENV BIN_FILE "/opt/calendar/calendar-app"
+ENV BIN_FILE /bin/calendar
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/calendar/config.yaml
-COPY ./configs/config.yaml ${CONFIG_FILE}
-
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+CMD ${BIN_FILE} -config /etc/config.yaml

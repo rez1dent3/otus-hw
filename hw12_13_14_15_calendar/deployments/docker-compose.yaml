@@ -41,9 +41,7 @@ services:
       - app
 
   calendar:
-    build:
-      context: ..
-      dockerfile: build/Dockerfile
+    image: calendar:develop
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,11 +56,40 @@ services:
       interval: 25s
       start_period: 1s
       retries: 10
+    volumes:
+      - ../configs/calendar_config.yaml:/etc/config.yaml:ro
     networks:
       - app
 
-#  scheduler:
-#  sender:
+  scheduler:
+    image: calendar-scheduler:develop
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      mode: global
+      replicas: 1
+    volumes:
+      - ../configs/scheduler_config.yaml:/etc/config.yaml:ro
+    networks:
+      - app
+
+  sender:
+    image: calendar-sender:develop
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      mode: global
+      replicas: 1
+    volumes:
+      - ../configs/sender_config.yaml:/etc/config.yaml:ro
+    networks:
+      - app
 
   nginx:
     build:

@@ -217,3 +217,59 @@ func TestPgStorage_List(t *testing.T) {
 		require.Len(t, storage.ListEventsMonth(context.Background(), userID, now.AddDate(0, 1, 0)), 1)
 	})
 }
+
+func TestPgStorage_Notify(t *testing.T) {
+	t.Skip()
+
+	storage := storage2.NewPgStorage(dsn)
+	storage.Connect(context.Background())
+	defer storage.Close()
+
+	t.Run("ListToSendNotifies", func(t *testing.T) {
+		now := time.Now().UTC()
+		inputs := []struct {
+			uuid uuid.UUID
+			date time.Time
+			dur  time.Duration
+		}{
+			{uuid: uuid.Gen(), date: now, dur: time.Hour},
+		}
+
+		for _, input := range inputs {
+			_, err := storage.CreateEvent(
+				context.Background(),
+				storage2.Event{
+					ID:        input.uuid,
+					UserID:    uuid.Gen(),
+					StartAt:   input.date,
+					EndAt:     input.date.Add(24 * time.Hour),
+					RemindFor: (*storage2.Duration)(&input.dur)})
+
+			require.NoError(t, err)
+		}
+
+		notifies, err := storage.ListToSendNotifies(context.Background(), now.AddDate(0, 0, -1))
+		require.NoError(t, err)
+		require.Len(t, notifies, 0)
+
+		notifies, err = storage.ListToSendNotifies(context.Background(), now.Add(-(2 * time.Hour)))
+		require.NoError(t, err)
+		require.Len(t, notifies, 0)
+
+		notifies, err = storage.ListToSendNotifies(context.Background(), now.Add(2*time.Hour))
+		require.NoError(t, err)
+		require.Len(t, notifies, 1)
+
+		notifies, err = storage.ListToSendNotifies(context.Background(), now)
+		require.NoError(t, err)
+		require.Len(t, notifies, 1)
+
+		for _, input := range inputs {
+			require.NoError(t, storage.MarkAsSent(context.Background(), input.uuid))
+		}
+
+		notifies, err = storage.ListToSendNotifies(context.Background(), now)
+		require.NoError(t, err)
+		require.Len(t, notifies, 0)
+	})
+}

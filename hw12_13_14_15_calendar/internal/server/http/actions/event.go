@@ -140,7 +140,7 @@ func (e *EventEnt) list(events []storage.Event) []responses.EventResponse {
 			StartAt:     item.StartAt,
 			EndAt:       item.EndAt,
 			UserID:      item.UserID.String(),
-			RemindFor:   item.RemindFor,
+			RemindFor:   (*time.Duration)(item.RemindFor),
 		}
 		i++
 	}

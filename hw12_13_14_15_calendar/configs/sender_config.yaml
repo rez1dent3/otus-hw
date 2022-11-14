@@ -1,0 +1,5 @@
+logger:
+  level: DEBUG
+queue:
+  dsn: "amqp://rabbit_user:rabbit_pass@rabbitmq:5672/"
+  name: "calendar_queue"

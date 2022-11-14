@@ -42,13 +42,8 @@ func (u *UUID) String() string {
 }
 
 func (u *UUID) Scan(src interface{}) error {
-	if val, ok := src.(string); ok {
-		*u = FromString(val)
-		return nil
-	}
-
 	if val, ok := src.([]byte); ok {
-		*u = FromBytes(val)
+		*u = FromString(string(val))
 		return nil
 	}
 

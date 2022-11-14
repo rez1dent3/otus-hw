@@ -1,6 +1,7 @@
 package internalhttp_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -163,7 +164,8 @@ func TestServer_CreateEvent(t *testing.T) {
 		require.Equal(t, "{}\n", string(result))
 
 		client := http.Client{Timeout: time.Second}
-		req, err := http.NewRequest(
+		req, err := http.NewRequestWithContext(
+			context.Background(),
 			http.MethodDelete,
 			fmt.Sprintf("%s/events?id="+eventID.String(), server.URL), nil)
 		require.NoError(t, err)

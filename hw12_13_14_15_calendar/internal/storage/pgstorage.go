@@ -40,9 +40,9 @@ func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) (bool, e
 	rows, err := s.db.NamedExecContext(
 		ctx,
 		`INSERT INTO events 
-    			(id, title, description, start_at, end_at, user_id, created_at, updated_at) 
+    			(id, title, description, start_at, end_at, user_id, is_sent, remind_for, created_at, updated_at) 
     		VALUES 
-    			(:id, :title, :description, :start_at, :end_at, :user_id, NOW(), NOW());`,
+    			(:id, :title, :description, :start_at, :end_at, :user_id, :is_sent, :remind_for, NOW(), NOW());`,
 		event)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -226,4 +226,79 @@ func (s *PgStorage) ListEventsMonth(parentCtx context.Context, userID uuid.UUID,
 	}
 
 	return result
+}
+
+func (s *PgStorage) ListToSendNotifies(parentCtx context.Context, date time.Time) ([]Notify, error) {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
+	defer cancel()
+
+	rows, err := s.db.QueryxContext(
+		ctx,
+		`SELECT id,
+       				title,
+       				description,
+       				start_at,
+       				end_at,
+       				user_id
+			FROM events
+			WHERE is_sent=false 
+			  AND (
+			      remind_for IS NOT NULL AND start_at-remind_for<=$1
+			      OR
+			      remind_for IS NULL AND start_at<=$2
+			  )
+		  	LIMIT 1000`, date, date)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	var result []Notify
+	notify := Notify{}
+	for rows.Next() {
+		err := rows.StructScan(&notify)
+		if err != nil {
+			return nil, err
+		}
+
+		notify := notify
+		result = append(result, notify)
+	}
+
+	return result, nil
+}
+
+func (s *PgStorage) RemoveOldEvents(parentCtx context.Context, date time.Time) error {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
+	defer cancel()
+
+	_, err := s.db.ExecContext(
+		ctx,
+		`DELETE FROM events
+    		WHERE end_at<=$1`,
+		date,
+	)
+
+	return err
+}
+
+func (s *PgStorage) MarkAsSent(parentCtx context.Context, eventID uuid.UUID) error {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
+	defer cancel()
+
+	_, err := s.db.ExecContext(
+		ctx,
+		`UPDATE events 
+    		SET
+    		    is_sent=true
+    		WHERE
+    		    id=$1`,
+		eventID,
+	)
+
+	return err
 }
