@@ -7,8 +7,10 @@ import (
 )
 
 type Config struct {
-	Logger LoggerConf
-	Queue  QueueConf
+	Logger   LoggerConf
+	Queue    QueueConf
+	Database DBConf
+	Storage  StorageConf
 }
 
 type LoggerConf struct {
@@ -18,6 +20,14 @@ type LoggerConf struct {
 type QueueConf struct {
 	Dsn  string
 	Name string
+}
+
+type DBConf struct {
+	Dsn string
+}
+
+type StorageConf struct {
+	Driver string
 }
 
 func NewConfig(reader io.Reader) (*Config, error) {

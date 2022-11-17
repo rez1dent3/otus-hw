@@ -28,7 +28,13 @@ type CalendarStorage interface {
 type SchedulerStorage interface {
 	ListToSendNotifies(context.Context, time.Time) ([]Notify, error)
 	RemoveOldEvents(context.Context, time.Time) error
-	MarkAsSent(context.Context, uuid.UUID) error
+	MarkInQueue(context.Context, uuid.UUID) error
+
+	Close() error
+}
+
+type SenderStorage interface {
+	MarkAsDispatched(context.Context, uuid.UUID) error
 
 	Close() error
 }
@@ -36,6 +42,7 @@ type SchedulerStorage interface {
 type internalStorage interface {
 	CalendarStorage
 	SchedulerStorage
+	SenderStorage
 }
 
 func newConnect(ctx context.Context, driver, dsn string) (internalStorage, error) {
@@ -56,5 +63,9 @@ func NewCalendarStorage(ctx context.Context, driver, dsn string) (CalendarStorag
 }
 
 func NewSchedulerStorage(ctx context.Context, driver, dsn string) (SchedulerStorage, error) {
+	return newConnect(ctx, driver, dsn)
+}
+
+func NewSenderStorage(ctx context.Context, driver, dsn string) (SenderStorage, error) {
 	return newConnect(ctx, driver, dsn)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/exchanges"
@@ -14,13 +15,15 @@ type Sender struct {
 	queue     exchanges.QueueInterface
 	log       *logger.Logger
 	queueName string
+	storage   storage.SenderStorage
 }
 
-func New(log *logger.Logger, queue exchanges.QueueInterface, queueName string) *Sender {
+func New(log *logger.Logger, queue exchanges.QueueInterface, queueName string, storage storage.SenderStorage) *Sender {
 	return &Sender{
 		log:       log,
 		queue:     queue,
 		queueName: queueName,
+		storage:   storage,
 	}
 }
 
@@ -29,6 +32,13 @@ func (s Sender) consume(body []byte) {
 	err := json.Unmarshal(body, &notify)
 	if err != nil {
 		s.log.Error("unmarshal body error: " + err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	if err := s.storage.MarkAsDispatched(ctx, notify.EventID); err != nil {
 		return
 	}
 
