@@ -36,6 +36,10 @@ up: build-img
 down:
 	docker-compose -f deployments/docker-compose.yaml down
 
+integration-tests: build-img
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.tests.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from tests && \
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.tests.yaml down
+
 run-img: build-img
 	docker run $(DOCKER_IMG)
 
@@ -54,4 +58,4 @@ lint: install-lint-deps
 generate:
 	go generate ./...
 
-.PHONY: build run build-img run-img version test lint
+.PHONY: build run build-img up down integration-tests run-img version test lint generate
