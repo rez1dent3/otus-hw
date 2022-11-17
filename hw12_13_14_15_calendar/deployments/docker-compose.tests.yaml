@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  tests:
+    image: golang:1.19-alpine
+    volumes:
+      - ./../:/app/
+    working_dir: /app
+    command: sh -c 'go test -v ./tests/...'
+    environment:
+      CGO_ENABLED: 0
+    depends_on:
+      - nginx
+    networks:
+      - app
+
+networks:
+  app:
