@@ -90,7 +90,7 @@ func (s *Scheduler) notify(ctx context.Context) error {
 			continue
 		}
 
-		if err := s.storage.MarkAsSent(ctx, notify.EventID); err != nil {
+		if err := s.storage.MarkInQueue(ctx, notify.EventID); err != nil {
 			s.logger.Error("set is notified error: " + err.Error())
 		}
 	}

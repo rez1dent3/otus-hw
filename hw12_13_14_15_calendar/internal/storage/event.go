@@ -7,14 +7,15 @@ import (
 )
 
 type Event struct {
-	ID          uuid.UUID `db:"id"`
-	Title       string    `db:"title"`
-	Description string    `db:"description"`
-	StartAt     time.Time `db:"start_at"`
-	EndAt       time.Time `db:"end_at"`
-	UserID      uuid.UUID `db:"user_id"`
-	RemindFor   *Duration `db:"remind_for"`
-	IsSent      bool      `db:"is_sent"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID           uuid.UUID `db:"id"`
+	Title        string    `db:"title"`
+	Description  string    `db:"description"`
+	StartAt      time.Time `db:"start_at"`
+	EndAt        time.Time `db:"end_at"`
+	UserID       uuid.UUID `db:"user_id"`
+	RemindFor    *Duration `db:"remind_for"`
+	InQueue      bool      `db:"in_queue"`
+	IsDispatched bool      `db:"is_dispatched"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }

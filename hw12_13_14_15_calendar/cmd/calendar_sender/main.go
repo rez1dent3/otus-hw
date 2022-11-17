@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/consumers/sender"
+	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/exchanges/rabbitmq"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/logger"
 )
@@ -49,8 +50,22 @@ func main() {
 	defer cancel()
 
 	logg := logger.New(config.Logger.Level, os.Stdout)
+	logg.Debug("db driver: " + config.Storage.Driver)
+
+	repo, err := storage.NewSenderStorage(ctx, config.Storage.Driver, config.Database.Dsn)
+	if err != nil {
+		logg.Error(err.Error())
+		return
+	}
+
+	defer func() {
+		if err := repo.Close(); err != nil {
+			logg.Error(err.Error())
+		}
+	}()
+
 	amqp := rabbitmq.New(config.Queue.Dsn)
-	snd := sender.New(logg, amqp, config.Queue.Name)
+	snd := sender.New(logg, amqp, config.Queue.Name, repo)
 
 	defer func() {
 		err := amqp.Close()
