@@ -265,7 +265,7 @@ func TestPgStorage_Notify(t *testing.T) {
 		require.Len(t, notifies, 1)
 
 		for _, input := range inputs {
-			require.NoError(t, storage.MarkAsSent(context.Background(), input.uuid))
+			require.NoError(t, storage.MarkInQueue(context.Background(), input.uuid))
 		}
 
 		notifies, err = storage.ListToSendNotifies(context.Background(), now)

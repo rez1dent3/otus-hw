@@ -40,9 +40,9 @@ func (s *PgStorage) CreateEvent(parentCtx context.Context, event Event) (bool, e
 	rows, err := s.db.NamedExecContext(
 		ctx,
 		`INSERT INTO events 
-    			(id, title, description, start_at, end_at, user_id, is_sent, remind_for, created_at, updated_at) 
+    			(id, title, description, start_at, end_at, user_id, in_queue, is_dispatched, remind_for, created_at, updated_at) 
     		VALUES 
-    			(:id, :title, :description, :start_at, :end_at, :user_id, :is_sent, :remind_for, NOW(), NOW());`,
+    			(:id, :title, :description, :start_at, :end_at, :user_id, :in_queue, :is_dispatched, :remind_for, NOW(), NOW());`,
 		event)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -241,7 +241,7 @@ func (s *PgStorage) ListToSendNotifies(parentCtx context.Context, date time.Time
        				end_at,
        				user_id
 			FROM events
-			WHERE is_sent=false 
+			WHERE in_queue=false 
 			  AND (
 			      remind_for IS NOT NULL AND start_at-remind_for<=$1
 			      OR
@@ -286,7 +286,7 @@ func (s *PgStorage) RemoveOldEvents(parentCtx context.Context, date time.Time) e
 	return err
 }
 
-func (s *PgStorage) MarkAsSent(parentCtx context.Context, eventID uuid.UUID) error {
+func (s *PgStorage) MarkInQueue(parentCtx context.Context, eventID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
 	defer cancel()
 
@@ -294,7 +294,24 @@ func (s *PgStorage) MarkAsSent(parentCtx context.Context, eventID uuid.UUID) err
 		ctx,
 		`UPDATE events 
     		SET
-    		    is_sent=true
+    		    in_queue=true
+    		WHERE
+    		    id=$1`,
+		eventID,
+	)
+
+	return err
+}
+
+func (s *PgStorage) MarkAsDispatched(parentCtx context.Context, eventID uuid.UUID) error {
+	ctx, cancel := context.WithTimeout(parentCtx, time.Second)
+	defer cancel()
+
+	_, err := s.db.ExecContext(
+		ctx,
+		`UPDATE events 
+    		SET
+    		    is_dispatched=true
     		WHERE
     		    id=$1`,
 		eventID,

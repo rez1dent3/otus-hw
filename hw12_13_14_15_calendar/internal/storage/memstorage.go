@@ -169,6 +169,10 @@ func (s *MemStorage) RemoveOldEvents(_ context.Context, _ time.Time) error {
 	return nil
 }
 
-func (s *MemStorage) MarkAsSent(_ context.Context, _ uuid.UUID) error {
+func (s *MemStorage) MarkInQueue(_ context.Context, _ uuid.UUID) error {
+	return nil
+}
+
+func (s *MemStorage) MarkAsDispatched(_ context.Context, _ uuid.UUID) error {
 	return nil
 }
