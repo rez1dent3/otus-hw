@@ -35,7 +35,18 @@ message EventListRequestV1 {
 }
 
 message EventResponseV1 {
-  repeated EventV1 items = 1;
+  message Event {
+    string id = 1;
+    string title = 2;
+    optional string description = 3;
+    google.protobuf.Timestamp start_at = 4;
+    google.protobuf.Timestamp end_at = 5;
+    string user_id = 6;
+    optional google.protobuf.Duration remind_for = 7;
+    bool is_dispatched = 8;
+  }
+
+  repeated Event items = 1;
 }
 
 message ResponseStatusV1 {

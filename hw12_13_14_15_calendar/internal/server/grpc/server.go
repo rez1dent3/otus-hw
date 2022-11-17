@@ -129,18 +129,19 @@ func (s *Server) ListEventsMonthV1(ctx context.Context, req *EventListRequestV1)
 }
 
 func (s *Server) listResponse(events []storage.Event) *EventResponseV1 {
-	items := make([]*EventV1, len(events))
+	items := make([]*EventResponseV1_Event, len(events))
 	for i, item := range events {
 		item := item
 
-		items[i] = &EventV1{
-			Id:          item.ID.String(),
-			Title:       item.Title,
-			Description: &item.Description,
-			StartAt:     timestamppb.New(item.StartAt),
-			EndAt:       timestamppb.New(item.EndAt),
-			UserId:      item.UserID.String(),
-			RemindFor:   durationpb.New((time.Duration)(*item.RemindFor)),
+		items[i] = &EventResponseV1_Event{
+			Id:           item.ID.String(),
+			Title:        item.Title,
+			Description:  &item.Description,
+			StartAt:      timestamppb.New(item.StartAt),
+			EndAt:        timestamppb.New(item.EndAt),
+			UserId:       item.UserID.String(),
+			RemindFor:    durationpb.New((time.Duration)(*item.RemindFor)),
+			IsDispatched: item.IsDispatched,
 		}
 	}
 
