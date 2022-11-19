@@ -260,6 +260,12 @@ func TestPgStorage_Notify(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, notifies, 1)
 
+		list := storage.ListEventsDay(context.Background(), notifies[0].UserID, notifies[0].StartAt)
+		event := list[notifies[0].EventID]
+
+		require.NotNil(t, event.RemindFor)
+		require.Equal(t, time.Hour, (time.Duration)(*event.RemindFor))
+
 		notifies, err = storage.ListToSendNotifies(context.Background(), now)
 		require.NoError(t, err)
 		require.Len(t, notifies, 1)
