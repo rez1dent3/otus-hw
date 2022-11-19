@@ -839,7 +839,7 @@ func (s *httpTestSuite) TestCheckSenderApp() {
 	s.False(events1[0].IsDispatched)
 
 	// wait until the scheduler and sender work
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second)
 	defer cancel2()
