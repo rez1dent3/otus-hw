@@ -155,7 +155,7 @@ func (s *httpTestSuite) TestCheckCreateEvent() {
 			s.userID.String(),
 			s.startAt.Unix(),
 		),
-		bytes.NewReader(reqBody))
+		nil)
 
 	resp, err = client.Do(req)
 	s.NoError(err)
@@ -284,7 +284,7 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 			newUserID.String(),
 			s.endAt.Unix(),
 		),
-		bytes.NewReader(reqBody))
+		nil)
 
 	resp, err = client.Do(req)
 	s.NoError(err)
@@ -304,4 +304,126 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 	s.Equal(s.event.EndAt.Add(*s.event.RemindFor).Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
 	s.Equal(newUserID.String(), events[0].UserID)
 	s.Equal(false, events[0].IsDispatched)
+}
+
+func (s *httpTestSuite) TestCheckUpdateEventNotFound() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	reqBody, err := json.Marshal(s.event)
+	s.NoError(err)
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPut,
+		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+		bytes.NewReader(reqBody))
+
+	s.NoError(err)
+
+	client := http.Client{}
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	s.Equal(http.StatusNotFound, resp.StatusCode)
+}
+
+func (s *httpTestSuite) TestCheckDeleteEvent() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	reqBody, err := json.Marshal(s.event)
+	s.NoError(err)
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+		bytes.NewReader(reqBody))
+
+	s.NoError(err)
+
+	client := http.Client{}
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	s.Equal(http.StatusOK, resp.StatusCode)
+	s.NoError(resp.Body.Close())
+
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodDelete,
+		fmt.Sprintf(
+			"http://%s:%s/events?id=%s",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			s.eventID.String(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	s.Equal(http.StatusNoContent, resp.StatusCode)
+	s.NoError(resp.Body.Close())
+
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsDay&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			s.userID.String(),
+			s.startAt.Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err := io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var events []responses.EventResponse
+	err = json.Unmarshal(respBody, &events)
+	s.NoError(err)
+
+	s.Len(events, 0)
+}
+
+func (s *httpTestSuite) TestCheckDeleteEventNotFound() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodDelete,
+		fmt.Sprintf(
+			"http://%s:%s/events?id=%s",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			s.eventID.String(),
+		),
+		nil)
+
+	s.NoError(err)
+
+	client := http.Client{}
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	s.Equal(http.StatusNotFound, resp.StatusCode)
 }

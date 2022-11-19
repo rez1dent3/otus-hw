@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -124,7 +125,12 @@ func (e *EventEnt) error(w http.ResponseWriter, err error) {
 	e.logger.Error(err.Error())
 
 	resp := responses.ErrorResponse{Message: err.Error()}
-	w.WriteHeader(http.StatusBadRequest)
+	if errors.Is(err, storage.ErrNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	e.json(w, resp)
 }
 
