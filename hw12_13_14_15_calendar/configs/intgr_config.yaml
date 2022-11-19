@@ -1,0 +1,6 @@
+http:
+  host: calendar
+  port: 82
+grpc:
+  host: calendar
+  port: 81
