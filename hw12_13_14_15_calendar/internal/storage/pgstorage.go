@@ -136,7 +136,7 @@ func (s *PgStorage) ListEventsDay(parentCtx context.Context, userID uuid.UUID, d
 			FROM events
 			WHERE user_id=$1 AND
         		date_trunc('day', $2::date)::date BETWEEN 
-        			date_trunc('day', start_at)::date AND end_at::date`, userID, date)
+        			date_trunc('day', start_at)::date AND end_at::date order by created_at`, userID, date)
 	if err != nil {
 		return nil
 	}
@@ -170,7 +170,7 @@ func (s *PgStorage) ListEventsWeek(parentCtx context.Context, userID uuid.UUID, 
 			FROM events
 			WHERE user_id=$1 AND
         		date_trunc('week', $2::date)::date BETWEEN 
-        			date_trunc('week', start_at)::date AND end_at::date`, userID, date)
+        			date_trunc('week', start_at)::date AND end_at::date order by created_at`, userID, date)
 	if err != nil {
 		return nil
 	}
@@ -204,7 +204,7 @@ func (s *PgStorage) ListEventsMonth(parentCtx context.Context, userID uuid.UUID,
 			FROM events
 			WHERE user_id=$1 AND
         		date_trunc('month', $2::date)::date BETWEEN 
-        			date_trunc('month', start_at)::date AND end_at::date`, userID, date)
+        			date_trunc('month', start_at)::date AND end_at::date order by created_at`, userID, date)
 	if err != nil {
 		return nil
 	}
