@@ -21,9 +21,9 @@ func (d *Duration) Value() (driver.Value, error) {
 func (d *Duration) Scan(raw interface{}) error {
 	switch v := raw.(type) {
 	case int64:
-		*d = Duration(v)
+		*d = Duration(time.Duration(v))
 	case nil:
-		*d = Duration(0)
+		*d = Duration(time.Duration(0))
 	case time.Time:
 		h, m, s := v.Clock()
 		hd, md, sd := time.Duration(h)*time.Hour, time.Duration(m)*time.Minute, time.Duration(s)*time.Second
