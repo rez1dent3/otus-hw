@@ -140,13 +140,14 @@ func (e *EventEnt) list(events []storage.Event) []responses.EventResponse {
 	for _, item := range events {
 		item := item
 		result[i] = responses.EventResponse{
-			ID:          item.ID.String(),
-			Title:       item.Title,
-			Description: &item.Description,
-			StartAt:     item.StartAt,
-			EndAt:       item.EndAt,
-			UserID:      item.UserID.String(),
-			RemindFor:   (*time.Duration)(item.RemindFor),
+			ID:           item.ID.String(),
+			Title:        item.Title,
+			Description:  &item.Description,
+			StartAt:      item.StartAt,
+			EndAt:        item.EndAt,
+			UserID:       item.UserID.String(),
+			RemindFor:    (*time.Duration)(item.RemindFor),
+			IsDispatched: item.IsDispatched,
 		}
 		i++
 	}
