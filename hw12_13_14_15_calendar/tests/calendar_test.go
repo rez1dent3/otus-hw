@@ -175,7 +175,7 @@ func (s *httpTestSuite) TestCheckCreateEvent() {
 	s.Equal(s.event.EndAt.Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
 	s.Equal(s.event.UserID, events[0].UserID)
 	s.Equal(*s.event.RemindFor, *events[0].RemindFor)
-	s.Equal(false, events[0].IsDispatched)
+	s.False(events[0].IsDispatched)
 }
 
 func (s *httpTestSuite) TestCheckDuplicateCreateEvent() {
@@ -303,7 +303,7 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 	s.Equal(s.event.EndAt.Truncate(time.Second), events[0].StartAt.Truncate(time.Second))
 	s.Equal(s.event.EndAt.Add(*s.event.RemindFor).Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
 	s.Equal(newUserID.String(), events[0].UserID)
-	s.Equal(false, events[0].IsDispatched)
+	s.False(events[0].IsDispatched)
 }
 
 func (s *httpTestSuite) TestCheckUpdateEventNotFound() {
@@ -426,4 +426,447 @@ func (s *httpTestSuite) TestCheckDeleteEventNotFound() {
 	}()
 
 	s.Equal(http.StatusNotFound, resp.StatusCode)
+}
+
+func (s *httpTestSuite) TestCheckDayListEvents() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	client := http.Client{}
+
+	userID := uuid.Gen()
+	now := time.Date(2022, 11, 21, 0, 0, 0, 0, time.UTC)
+	var eventRequests []requests.EventRequest
+	for i := 0; i < 3; i++ {
+		// 21, 28, 5
+		eventID := uuid.Gen()
+		event := requests.EventRequest{
+			ID:        eventID.String(),
+			StartAt:   now.Add(time.Duration(i*7) * 24 * time.Hour),
+			EndAt:     now.Add(time.Duration(i*7+1) * 24 * time.Hour),
+			UserID:    userID.String(),
+			RemindFor: nil,
+		}
+		eventRequests = append(eventRequests, event)
+
+		reqBody, err := json.Marshal(event)
+		s.NoError(err)
+
+		req, err := http.NewRequestWithContext(
+			ctx,
+			http.MethodPost,
+			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+			bytes.NewReader(reqBody))
+
+		s.NoError(err)
+
+		resp, err := client.Do(req)
+		s.NoError(err)
+
+		s.Equal(http.StatusOK, resp.StatusCode)
+		s.NoError(resp.Body.Close())
+	}
+
+	// day
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsDay&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	respBody, err := io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp1 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp1)
+	s.NoError(err)
+	s.Len(eventResp1, 1)
+	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
+
+	// not found
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsDay&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(2*24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp2 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp2)
+	s.NoError(err)
+	s.Len(eventResp2, 0)
+}
+
+func (s *httpTestSuite) TestCheckWeekListEvents() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	client := http.Client{}
+
+	userID := uuid.Gen()
+	now := time.Date(2022, 11, 21, 0, 0, 0, 0, time.UTC)
+	var eventRequests []requests.EventRequest
+	for i := 0; i < 3; i++ {
+		// 21, 28, 5
+		eventID := uuid.Gen()
+		event := requests.EventRequest{
+			ID:        eventID.String(),
+			StartAt:   now.Add(time.Duration(i*7) * 24 * time.Hour),
+			EndAt:     now.Add(time.Duration(i*7+1) * 24 * time.Hour),
+			UserID:    userID.String(),
+			RemindFor: nil,
+		}
+		eventRequests = append(eventRequests, event)
+
+		reqBody, err := json.Marshal(event)
+		s.NoError(err)
+
+		req, err := http.NewRequestWithContext(
+			ctx,
+			http.MethodPost,
+			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+			bytes.NewReader(reqBody))
+
+		s.NoError(err)
+
+		resp, err := client.Do(req)
+		s.NoError(err)
+
+		s.Equal(http.StatusOK, resp.StatusCode)
+		s.NoError(resp.Body.Close())
+	}
+
+	// week
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsWeek&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	respBody, err := io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp1 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp1)
+	s.NoError(err)
+	s.Len(eventResp1, 1)
+	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
+
+	// next week
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsWeek&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(7*24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp2 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp2)
+	s.NoError(err)
+	s.Len(eventResp2, 1)
+	s.Equal(eventRequests[1].ID, eventResp2[0].ID)
+
+	// next week
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsWeek&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(14*24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp3 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp3)
+	s.NoError(err)
+	s.Len(eventResp3, 1)
+	s.Equal(eventRequests[2].ID, eventResp3[0].ID)
+
+	// not found - week
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsWeek&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Add(21*24*time.Hour).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp4 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp4)
+	s.NoError(err)
+	s.Len(eventResp4, 0)
+}
+
+func (s *httpTestSuite) TestCheckMonthListEvents() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	client := http.Client{}
+
+	userID := uuid.Gen()
+	now := time.Date(2022, 11, 21, 0, 0, 0, 0, time.UTC)
+	var eventRequests []requests.EventRequest
+	for i := 0; i < 3; i++ {
+		// 21, 28, 5
+		eventID := uuid.Gen()
+		event := requests.EventRequest{
+			ID:        eventID.String(),
+			StartAt:   now.Add(time.Duration(i*7) * 24 * time.Hour),
+			EndAt:     now.Add(time.Duration(i*7+1) * 24 * time.Hour),
+			UserID:    userID.String(),
+			RemindFor: nil,
+		}
+		eventRequests = append(eventRequests, event)
+
+		reqBody, err := json.Marshal(event)
+		s.NoError(err)
+
+		req, err := http.NewRequestWithContext(
+			ctx,
+			http.MethodPost,
+			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+			bytes.NewReader(reqBody))
+
+		s.NoError(err)
+
+		resp, err := client.Do(req)
+		s.NoError(err)
+
+		s.Equal(http.StatusOK, resp.StatusCode)
+		s.NoError(resp.Body.Close())
+	}
+
+	// month
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsMonth&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.Unix(),
+		),
+		nil)
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	respBody, err := io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp1 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp1)
+	s.NoError(err)
+	s.Len(eventResp1, 2)
+	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
+	s.Equal(eventRequests[1].ID, eventResp1[1].ID)
+
+	// next month
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsMonth&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.AddDate(0, 1, 0).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp2 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp2)
+	s.NoError(err)
+	s.Len(eventResp2, 1)
+	s.Equal(eventRequests[2].ID, eventResp2[0].ID)
+
+	// not found - month
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsMonth&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			userID.String(),
+			now.AddDate(0, 2, 0).Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var eventResp3 []responses.EventResponse
+
+	err = json.Unmarshal(respBody, &eventResp3)
+	s.NoError(err)
+	s.Len(eventResp3, 0)
+}
+
+func (s *httpTestSuite) TestCheckSenderApp() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	reqBody, err := json.Marshal(s.event)
+	s.NoError(err)
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
+		bytes.NewReader(reqBody))
+
+	s.NoError(err)
+
+	client := http.Client{}
+
+	resp, err := client.Do(req)
+	s.NoError(err)
+
+	s.Equal(http.StatusOK, resp.StatusCode)
+	s.NoError(resp.Body.Close())
+
+	req, err = http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsDay&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			s.userID.String(),
+			s.startAt.Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err := io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var events1 []responses.EventResponse
+	err = json.Unmarshal(respBody, &events1)
+	s.NoError(err)
+
+	s.Equal(s.event.ID, events1[0].ID)
+	s.False(events1[0].IsDispatched)
+
+	// wait until the scheduler and sender work
+	time.Sleep(5 * time.Second)
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	defer cancel2()
+
+	req, err = http.NewRequestWithContext(
+		ctx2,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://%s:%s/events?type=ListEventsDay&userId=%s&timestamp=%d",
+			s.cfg.HTTP.Host,
+			s.cfg.HTTP.Port,
+			s.userID.String(),
+			s.startAt.Unix(),
+		),
+		nil)
+
+	resp, err = client.Do(req)
+	s.NoError(err)
+
+	respBody, err = io.ReadAll(resp.Body)
+	s.NoError(resp.Body.Close())
+	s.Equal(http.StatusOK, resp.StatusCode)
+
+	var events2 []responses.EventResponse
+	err = json.Unmarshal(respBody, &events2)
+	s.NoError(err)
+
+	s.Equal(s.event.ID, events2[0].ID)
+	s.True(events2[0].IsDispatched)
 }
