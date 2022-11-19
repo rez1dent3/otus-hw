@@ -16,6 +16,7 @@ import (
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/requests"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/internal/server/http/responses"
 	"github.com/rez1dent3/otus-hw/hw12_13_14_15_calendar/pkg/uuid"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -127,7 +128,7 @@ func (s *httpTestSuite) TestCheckCreateEvent() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -135,15 +136,15 @@ func (s *httpTestSuite) TestCheckCreateEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -158,24 +159,24 @@ func (s *httpTestSuite) TestCheckCreateEvent() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var events []responses.EventResponse
 	err = json.Unmarshal(respBody, &events)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(s.event.ID, events[0].ID)
-	s.Equal(s.event.Title, events[0].Title)
-	s.Equal(s.event.Description, *events[0].Description)
-	s.Equal(s.event.StartAt.Truncate(time.Second), events[0].StartAt.Truncate(time.Second))
-	s.Equal(s.event.EndAt.Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
-	s.Equal(s.event.UserID, events[0].UserID)
-	s.Equal(*s.event.RemindFor, *events[0].RemindFor)
-	s.False(events[0].IsDispatched)
+	require.Equal(s.Suite.T(), s.event.ID, events[0].ID)
+	require.Equal(s.Suite.T(), s.event.Title, events[0].Title)
+	require.Equal(s.Suite.T(), s.event.Description, *events[0].Description)
+	require.Equal(s.Suite.T(), s.event.StartAt.Truncate(time.Second), events[0].StartAt.Truncate(time.Second))
+	require.Equal(s.Suite.T(), s.event.EndAt.Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
+	require.Equal(s.Suite.T(), s.event.UserID, events[0].UserID)
+	require.Equal(s.Suite.T(), *s.event.RemindFor, *events[0].RemindFor)
+	require.False(s.Suite.T(), events[0].IsDispatched)
 }
 
 func (s *httpTestSuite) TestCheckDuplicateCreateEvent() {
@@ -183,7 +184,7 @@ func (s *httpTestSuite) TestCheckDuplicateCreateEvent() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -191,15 +192,15 @@ func (s *httpTestSuite) TestCheckDuplicateCreateEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -207,20 +208,20 @@ func (s *httpTestSuite) TestCheckDuplicateCreateEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal("{\"message\":\"unable to duplicate\"}\n", string(respBody))
-	s.Equal(http.StatusBadRequest, resp.StatusCode)
+	require.Equal(s.Suite.T(), "{\"message\":\"unable to duplicate\"}\n", string(respBody))
+	require.Equal(s.Suite.T(), http.StatusBadRequest, resp.StatusCode)
 }
 
 func (s *httpTestSuite) TestCheckUpdateEvent() {
@@ -228,7 +229,7 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -236,15 +237,15 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	newUserID := uuid.Gen()
 	newEvent := requests.EventRequest{
@@ -258,7 +259,7 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 	}
 
 	reqBody, err = json.Marshal(newEvent)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -266,13 +267,13 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -287,23 +288,23 @@ func (s *httpTestSuite) TestCheckUpdateEvent() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var events []responses.EventResponse
 	err = json.Unmarshal(respBody, &events)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(s.eventID.String(), events[0].ID)
-	s.Equal("Title", events[0].Title)
-	s.Equal("Description", *events[0].Description)
-	s.Equal(s.event.EndAt.Truncate(time.Second), events[0].StartAt.Truncate(time.Second))
-	s.Equal(s.event.EndAt.Add(*s.event.RemindFor).Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
-	s.Equal(newUserID.String(), events[0].UserID)
-	s.False(events[0].IsDispatched)
+	require.Equal(s.Suite.T(), s.eventID.String(), events[0].ID)
+	require.Equal(s.Suite.T(), "Title", events[0].Title)
+	require.Equal(s.Suite.T(), "Description", *events[0].Description)
+	require.Equal(s.Suite.T(), s.event.EndAt.Truncate(time.Second), events[0].StartAt.Truncate(time.Second))
+	require.Equal(s.Suite.T(), s.event.EndAt.Add(*s.event.RemindFor).Truncate(time.Second), events[0].EndAt.Truncate(time.Second))
+	require.Equal(s.Suite.T(), newUserID.String(), events[0].UserID)
+	require.False(s.Suite.T(), events[0].IsDispatched)
 }
 
 func (s *httpTestSuite) TestCheckUpdateEventNotFound() {
@@ -311,7 +312,7 @@ func (s *httpTestSuite) TestCheckUpdateEventNotFound() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -319,18 +320,18 @@ func (s *httpTestSuite) TestCheckUpdateEventNotFound() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
-	s.Equal(http.StatusNotFound, resp.StatusCode)
+	require.Equal(s.Suite.T(), http.StatusNotFound, resp.StatusCode)
 }
 
 func (s *httpTestSuite) TestCheckDeleteEvent() {
@@ -338,7 +339,7 @@ func (s *httpTestSuite) TestCheckDeleteEvent() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -346,15 +347,15 @@ func (s *httpTestSuite) TestCheckDeleteEvent() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -368,10 +369,10 @@ func (s *httpTestSuite) TestCheckDeleteEvent() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusNoContent, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusNoContent, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -386,17 +387,17 @@ func (s *httpTestSuite) TestCheckDeleteEvent() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var events []responses.EventResponse
 	err = json.Unmarshal(respBody, &events)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Len(events, 0)
+	require.Len(s.Suite.T(), events, 0)
 }
 
 func (s *httpTestSuite) TestCheckDeleteEventNotFound() {
@@ -414,18 +415,18 @@ func (s *httpTestSuite) TestCheckDeleteEventNotFound() {
 		),
 		nil)
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
-	s.Equal(http.StatusNotFound, resp.StatusCode)
+	require.Equal(s.Suite.T(), http.StatusNotFound, resp.StatusCode)
 }
 
 func (s *httpTestSuite) TestCheckDayListEvents() {
@@ -450,7 +451,7 @@ func (s *httpTestSuite) TestCheckDayListEvents() {
 		eventRequests = append(eventRequests, event)
 
 		reqBody, err := json.Marshal(event)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		req, err := http.NewRequestWithContext(
 			ctx,
@@ -458,13 +459,13 @@ func (s *httpTestSuite) TestCheckDayListEvents() {
 			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 			bytes.NewReader(reqBody))
 
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		resp, err := client.Do(req)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
-		s.Equal(http.StatusOK, resp.StatusCode)
-		s.NoError(resp.Body.Close())
+		require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+		require.NoError(s.Suite.T(), resp.Body.Close())
 	}
 
 	// day
@@ -481,18 +482,18 @@ func (s *httpTestSuite) TestCheckDayListEvents() {
 		nil)
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp1 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp1)
-	s.NoError(err)
-	s.Len(eventResp1, 1)
-	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp1, 1)
+	require.Equal(s.Suite.T(), eventRequests[0].ID, eventResp1[0].ID)
 
 	// not found
 	req, err = http.NewRequestWithContext(
@@ -508,17 +509,17 @@ func (s *httpTestSuite) TestCheckDayListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp2 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp2)
-	s.NoError(err)
-	s.Len(eventResp2, 0)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp2, 0)
 }
 
 func (s *httpTestSuite) TestCheckWeekListEvents() {
@@ -543,7 +544,7 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 		eventRequests = append(eventRequests, event)
 
 		reqBody, err := json.Marshal(event)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		req, err := http.NewRequestWithContext(
 			ctx,
@@ -551,13 +552,13 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 			bytes.NewReader(reqBody))
 
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		resp, err := client.Do(req)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
-		s.Equal(http.StatusOK, resp.StatusCode)
-		s.NoError(resp.Body.Close())
+		require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+		require.NoError(s.Suite.T(), resp.Body.Close())
 	}
 
 	// week
@@ -574,18 +575,18 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 		nil)
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp1 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp1)
-	s.NoError(err)
-	s.Len(eventResp1, 1)
-	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp1, 1)
+	require.Equal(s.Suite.T(), eventRequests[0].ID, eventResp1[0].ID)
 
 	// next week
 	req, err = http.NewRequestWithContext(
@@ -601,18 +602,18 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp2 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp2)
-	s.NoError(err)
-	s.Len(eventResp2, 1)
-	s.Equal(eventRequests[1].ID, eventResp2[0].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp2, 1)
+	require.Equal(s.Suite.T(), eventRequests[1].ID, eventResp2[0].ID)
 
 	// next week
 	req, err = http.NewRequestWithContext(
@@ -628,18 +629,18 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp3 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp3)
-	s.NoError(err)
-	s.Len(eventResp3, 1)
-	s.Equal(eventRequests[2].ID, eventResp3[0].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp3, 1)
+	require.Equal(s.Suite.T(), eventRequests[2].ID, eventResp3[0].ID)
 
 	// not found - week
 	req, err = http.NewRequestWithContext(
@@ -655,17 +656,17 @@ func (s *httpTestSuite) TestCheckWeekListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp4 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp4)
-	s.NoError(err)
-	s.Len(eventResp4, 0)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp4, 0)
 }
 
 func (s *httpTestSuite) TestCheckMonthListEvents() {
@@ -690,7 +691,7 @@ func (s *httpTestSuite) TestCheckMonthListEvents() {
 		eventRequests = append(eventRequests, event)
 
 		reqBody, err := json.Marshal(event)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		req, err := http.NewRequestWithContext(
 			ctx,
@@ -698,13 +699,13 @@ func (s *httpTestSuite) TestCheckMonthListEvents() {
 			fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 			bytes.NewReader(reqBody))
 
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
 		resp, err := client.Do(req)
-		s.NoError(err)
+		require.NoError(s.Suite.T(), err)
 
-		s.Equal(http.StatusOK, resp.StatusCode)
-		s.NoError(resp.Body.Close())
+		require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+		require.NoError(s.Suite.T(), resp.Body.Close())
 	}
 
 	// month
@@ -721,19 +722,19 @@ func (s *httpTestSuite) TestCheckMonthListEvents() {
 		nil)
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp1 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp1)
-	s.NoError(err)
-	s.Len(eventResp1, 2)
-	s.Equal(eventRequests[0].ID, eventResp1[0].ID)
-	s.Equal(eventRequests[1].ID, eventResp1[1].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp1, 2)
+	require.Equal(s.Suite.T(), eventRequests[0].ID, eventResp1[0].ID)
+	require.Equal(s.Suite.T(), eventRequests[1].ID, eventResp1[1].ID)
 
 	// next month
 	req, err = http.NewRequestWithContext(
@@ -749,18 +750,18 @@ func (s *httpTestSuite) TestCheckMonthListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp2 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp2)
-	s.NoError(err)
-	s.Len(eventResp2, 1)
-	s.Equal(eventRequests[2].ID, eventResp2[0].ID)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp2, 1)
+	require.Equal(s.Suite.T(), eventRequests[2].ID, eventResp2[0].ID)
 
 	// not found - month
 	req, err = http.NewRequestWithContext(
@@ -776,17 +777,17 @@ func (s *httpTestSuite) TestCheckMonthListEvents() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var eventResp3 []responses.EventResponse
 
 	err = json.Unmarshal(respBody, &eventResp3)
-	s.NoError(err)
-	s.Len(eventResp3, 0)
+	require.NoError(s.Suite.T(), err)
+	require.Len(s.Suite.T(), eventResp3, 0)
 }
 
 func (s *httpTestSuite) TestCheckSenderApp() {
@@ -794,7 +795,7 @@ func (s *httpTestSuite) TestCheckSenderApp() {
 	defer cancel()
 
 	reqBody, err := json.Marshal(s.event)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -802,15 +803,15 @@ func (s *httpTestSuite) TestCheckSenderApp() {
 		fmt.Sprintf("http://%s:%s/events", s.cfg.HTTP.Host, s.cfg.HTTP.Port),
 		bytes.NewReader(reqBody))
 
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	client := http.Client{}
 
 	resp, err := client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.NoError(resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
 
 	req, err = http.NewRequestWithContext(
 		ctx,
@@ -825,18 +826,18 @@ func (s *httpTestSuite) TestCheckSenderApp() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err := io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var events1 []responses.EventResponse
 	err = json.Unmarshal(respBody, &events1)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(s.event.ID, events1[0].ID)
-	s.False(events1[0].IsDispatched)
+	require.Equal(s.Suite.T(), s.event.ID, events1[0].ID)
+	require.False(s.Suite.T(), events1[0].IsDispatched)
 
 	// wait until the scheduler and sender work
 	time.Sleep(3 * time.Second)
@@ -857,16 +858,16 @@ func (s *httpTestSuite) TestCheckSenderApp() {
 		nil)
 
 	resp, err = client.Do(req)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
 	respBody, err = io.ReadAll(resp.Body)
-	s.NoError(resp.Body.Close())
-	s.Equal(http.StatusOK, resp.StatusCode)
+	require.NoError(s.Suite.T(), resp.Body.Close())
+	require.Equal(s.Suite.T(), http.StatusOK, resp.StatusCode)
 
 	var events2 []responses.EventResponse
 	err = json.Unmarshal(respBody, &events2)
-	s.NoError(err)
+	require.NoError(s.Suite.T(), err)
 
-	s.Equal(s.event.ID, events2[0].ID)
-	s.True(events2[0].IsDispatched)
+	require.Equal(s.Suite.T(), s.event.ID, events2[0].ID)
+	require.True(s.Suite.T(), events2[0].IsDispatched)
 }
