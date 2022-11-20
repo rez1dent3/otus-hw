@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:14.5
-    ports:
-      - 5432:5432
+    image: postgres:14.5-alpine
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d calendar -U calendar_user"]
       timeout: 5s
@@ -98,10 +96,6 @@ services:
     depends_on:
       calendar:
         condition: service_healthy
-    ports:
-      - "15672:15672" # rabbitmq
-      - "80:80" # calendar http
-      - "81:81" # calendar grpc
     deploy:
       mode: replicated
       replicas: 1
