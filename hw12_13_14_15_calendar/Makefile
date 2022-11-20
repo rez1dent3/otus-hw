@@ -31,10 +31,10 @@ build-img:
 		-f build/sender/Dockerfile .
 
 up: build-img
-	docker-compose -f deployments/docker-compose.yaml up -d
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.exports.yaml up -d
 
 down:
-	docker-compose -f deployments/docker-compose.yaml down
+	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.exports.yaml down
 
 integration-tests: build-img
 	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.tests.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from tests && \
